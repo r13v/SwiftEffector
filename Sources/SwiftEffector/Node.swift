@@ -27,7 +27,7 @@ public final class Node {
         case child = 1 // forward
         case pure = 2 // on, map
         case combine = 3 // combine
-        case link = 4 // link
+        case sample = 4 // sample
         case effect = 5 // watch, effect handler
     }
 

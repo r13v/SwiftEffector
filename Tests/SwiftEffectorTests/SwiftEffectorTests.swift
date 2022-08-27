@@ -368,32 +368,32 @@ final class SwiftEffectorTests: XCTestCase {
         XCTAssertEqual(got, 11)
     }
 
-    func testLinkBasic() async throws {
+    func testSampleBasic() async throws {
         var log = [Int]()
         let trigger = Event<Int>()
 
-        let link = link(trigger: trigger)
+        let sample = sample(trigger: trigger)
 
-        link.watch { log.append($0) }
+        sample.watch { log.append($0) }
 
         trigger(1)
 
         XCTAssertEqual(log, [1])
     }
 
-    func testLinkReturnedEvent() async throws {
+    func testSampleReturnedEvent() async throws {
         var log = [Int]()
         let trigger = Event<Int>()
         let source = Store(1)
 
-        let link = link(
+        let sample = sample(
             trigger: trigger,
             source: source,
             filter: { s, p in s + p > 0 },
             map: { s, p in s + p }
         )
 
-        link.watch { log.append($0) }
+        sample.watch { log.append($0) }
 
         trigger(-10)
         trigger(1)
@@ -401,13 +401,13 @@ final class SwiftEffectorTests: XCTestCase {
         XCTAssertEqual(log, [2])
     }
 
-    func testLinkEventToEvent() async throws {
+    func testSampleEventToEvent() async throws {
         var log = [Int]()
         let trigger = Event<Int>()
         let source = Store(1)
         let target = Event<Int>()
 
-        link(
+        sample(
             trigger: trigger,
             source: source,
             filter: { s, p in s + p > 0 },
@@ -423,11 +423,11 @@ final class SwiftEffectorTests: XCTestCase {
         XCTAssertEqual(log, [2])
     }
 
-    func testLinkEventToStore() async throws {
+    func testSampleEventToStore() async throws {
         let trigger = Event<Int>()
         let target = Store<Int>(0)
 
-        link(
+        sample(
             trigger: trigger,
             source: Store(1),
             filter: { s, p in s + p > 0 },
@@ -441,7 +441,7 @@ final class SwiftEffectorTests: XCTestCase {
         XCTAssertEqual(target.getState(), 2)
     }
 
-    func testLinkEventToEffect() async throws {
+    func testSampleEventToEffect() async throws {
         var log = [Int]()
         let trigger = Event<Int>()
         let target = Effect<Int, Int, Error> { n in
@@ -451,7 +451,7 @@ final class SwiftEffectorTests: XCTestCase {
 
         target.doneData.watch { log.append($0) }
 
-        link(
+        sample(
             trigger: trigger,
             target: target
         )
@@ -468,7 +468,7 @@ final class SwiftEffectorTests: XCTestCase {
          case child = 1 // forward
          case pure = 2 // on, map
          case combine = 3 // combine
-         case link = 4 // link
+         case sample = 4 // sample
          case effect = 5 // watch, effect handler
          */
 
@@ -496,8 +496,8 @@ final class SwiftEffectorTests: XCTestCase {
         let combine = Node(name: "combine", kind: .regular, priority: .combine)
         queue.enqueue(combine, 0)
 
-        let link = Node(name: "link", kind: .regular, priority: .link)
-        queue.enqueue(link, 0)
+        let sample = Node(name: "sample", kind: .regular, priority: .sample)
+        queue.enqueue(sample, 0)
 
         let watch = Node(name: "watch", kind: .regular, priority: .effect)
         queue.enqueue(watch, 0)
@@ -521,7 +521,7 @@ final class SwiftEffectorTests: XCTestCase {
                 "on",
                 "map",
                 "combine",
-                "link",
+                "sample",
                 "effect",
                 "watch"
             ]

@@ -1,0 +1,5 @@
+--wrapparameters before-first
+--commas inline
+--enable organizedeclarations
+--disable wrapmultilinestatementbraces
+--wraparguments before-first

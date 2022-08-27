@@ -16,8 +16,12 @@ public final class Store<State>: Unit, ObservableObject {
             // swiftlint:disable:next force_cast
             let newState = state as! State
 
-            DispatchQueue.main.sync {
+            if Thread.isMainThread {
                 self.currentState = newState
+            } else {
+                DispatchQueue.main.sync {
+                    self.currentState = newState
+                }
             }
 
             return newState
@@ -113,7 +117,7 @@ public final class Store<State>: Unit, ObservableObject {
 
     // MARK: Private
 
-    private func onBase(name: String? = nil, _ event: Unit, _ fn: @escaping (State, Any) -> State) -> Self {
+    private func onBase(name: String? = nil, _ unit: Unit, _ fn: @escaping (State, Any) -> State) -> Self {
         if isDerived {
             preconditionFailure("\(self.name).on in derived store")
         }
@@ -123,7 +127,7 @@ public final class Store<State>: Unit, ObservableObject {
         createNode(
             name: nodeName,
             priority: .pure,
-            from: [event],
+            from: [unit],
             seq: [.compute(nodeName) { payload in fn(self.currentState, payload) }],
             to: [self]
         )

@@ -1,0 +1,23 @@
+opt_in_rules:
+    - toggle_bool
+    - unused_declaration
+    - unused_import
+    - file_name
+
+identifier_name:
+  allowed_symbols: "_"
+  excluded:
+    - id
+    - vm
+    - vc
+    - fn
+    - x
+    - n
+    - s
+    - p
+    - ok
+    - a
+    - b
+    - c
+    - fx
+    - to

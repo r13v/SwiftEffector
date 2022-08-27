@@ -8,7 +8,7 @@ let package = Package(
     products: [
         .library(
             name: "SwiftEffector",
-            targets: ["SwiftEffector"]),
+            targets: ["SwiftEffector"])
     ],
     dependencies: [],
     targets: [
@@ -17,5 +17,5 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "SwiftEffectorTests",
-            dependencies: ["SwiftEffector"]),
+            dependencies: ["SwiftEffector"])
     ])

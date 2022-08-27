@@ -1,4 +1,4 @@
-func linkBase<Payload, State, Mapped>(
+func sampleBase<Payload, State, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
@@ -32,7 +32,7 @@ func linkBase<Payload, State, Mapped>(
     createNode(
         name: sampleName,
         kind: .event,
-        priority: .link,
+        priority: .sample,
         from: [trigger],
         seq: seq,
         to: nextNodes
@@ -41,7 +41,7 @@ func linkBase<Payload, State, Mapped>(
     return targetEvent
 }
 
-func linkBase<Payload, Mapped>(
+func sampleBase<Payload, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
@@ -76,7 +76,7 @@ func linkBase<Payload, Mapped>(
     createNode(
         name: sampleName,
         kind: .event,
-        priority: .link,
+        priority: .sample,
         from: [trigger],
         seq: seq,
         to: nextNodes
@@ -85,21 +85,21 @@ func linkBase<Payload, Mapped>(
     return targetEvent
 }
 
-// Link with source
+// Sample with source
 
 @discardableResult
-func link<Payload, State, Mapped>(
+public func sample<Payload, State, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil,
     map: ((State, Payload) -> Mapped)? = nil
 ) -> Event<Mapped> {
-    linkBase(name: name, trigger: trigger, source: source, filter: filter, map: map)
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, map: map)
 }
 
 @discardableResult
-func link<Payload, State, Mapped>(
+public func sample<Payload, State, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
@@ -107,11 +107,11 @@ func link<Payload, State, Mapped>(
     map: ((State, Payload) -> Mapped)? = nil,
     target: Event<Mapped>
 ) -> Event<Mapped> {
-    linkBase(name: name, trigger: trigger, source: source, filter: filter, map: map, target: target)
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, map: map, target: target)
 }
 
 @discardableResult
-func link<Payload, State, Mapped>(
+public func sample<Payload, State, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
@@ -119,11 +119,11 @@ func link<Payload, State, Mapped>(
     map: ((State, Payload) -> Mapped)? = nil,
     target: Store<Mapped>
 ) -> Event<Mapped> {
-    linkBase(name: name, trigger: trigger, source: source, filter: filter, map: map, target: target)
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, map: map, target: target)
 }
 
 @discardableResult
-func link<Payload, State, Mapped, Done, Fail>(
+public func sample<Payload, State, Mapped, Done, Fail>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
@@ -131,136 +131,136 @@ func link<Payload, State, Mapped, Done, Fail>(
     map: ((State, Payload) -> Mapped)? = nil,
     target: Effect<Mapped, Done, Fail>
 ) -> Event<Mapped> {
-    linkBase(name: name, trigger: trigger, source: source, filter: filter, map: map, target: target)
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, map: map, target: target)
 }
 
 // Link with source, but without map
 
 @discardableResult
-func link<Payload, State>(
+public func sample<Payload, State>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil
 ) -> Event<State> {
-    linkBase(name: name, trigger: trigger, source: source, filter: filter)
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter)
 }
 
 @discardableResult
-func link<Payload, State>(
+public func sample<Payload, State>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil,
     target: Event<State>
 ) -> Event<State> {
-    linkBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
 }
 
 @discardableResult
-func link<Payload, State>(
+public func sample<Payload, State>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil,
     target: Store<State>
 ) -> Event<State> {
-    linkBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
 }
 
 @discardableResult
-func link<Payload, State, Done, Fail>(
+public func sample<Payload, State, Done, Fail>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil,
     target: Effect<State, Done, Fail>
 ) -> Event<State> {
-    linkBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
 }
 
 // Link without source
 
 @discardableResult
-func link<Payload, Mapped>(
+public func sample<Payload, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
     map: @escaping (Payload) -> Mapped
 ) -> Event<Mapped> {
-    linkBase(name: name, trigger: trigger, filter: filter, map: map)
+    sampleBase(name: name, trigger: trigger, filter: filter, map: map)
 }
 
 @discardableResult
-func link<Payload, Mapped>(
+public func sample<Payload, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
     map: @escaping (Payload) -> Mapped,
     target: Event<Mapped>
 ) -> Event<Mapped> {
-    linkBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
+    sampleBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
 }
 
 @discardableResult
-func link<Payload, Mapped>(
+public func sample<Payload, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
     map: @escaping (Payload) -> Mapped,
     target: Store<Mapped>
 ) -> Event<Mapped> {
-    linkBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
+    sampleBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
 }
 
 @discardableResult
-func link<Payload, Mapped, Done, Fail>(
+public func sample<Payload, Mapped, Done, Fail>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
     map: @escaping (Payload) -> Mapped,
     target: Effect<Payload, Done, Fail>
 ) -> Event<Mapped> {
-    linkBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
+    sampleBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
 }
 
 // Link without source and map
 
 @discardableResult
-func link<Payload>(
+func sample<Payload>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil
 ) -> Event<Payload> {
-    linkBase(name: name, trigger: trigger, filter: filter)
+    sampleBase(name: name, trigger: trigger, filter: filter)
 }
 
 @discardableResult
-func link<Payload>(
+public func sample<Payload>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
     target: Event<Payload>
 ) -> Event<Payload> {
-    linkBase(name: name, trigger: trigger, filter: filter, target: target)
+    sampleBase(name: name, trigger: trigger, filter: filter, target: target)
 }
 
 @discardableResult
-func link<Payload>(
+public func sample<Payload>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
     target: Store<Payload>
 ) -> Event<Payload> {
-    linkBase(name: name, trigger: trigger, filter: filter, target: target)
+    sampleBase(name: name, trigger: trigger, filter: filter, target: target)
 }
 
 @discardableResult
-func link<Payload, Done, Fail>(
+public func sample<Payload, Done, Fail>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
     target: Effect<Payload, Done, Fail>
 ) -> Event<Payload> {
-    linkBase(name: name, trigger: trigger, filter: filter, target: target)
+    sampleBase(name: name, trigger: trigger, filter: filter, target: target)
 }
