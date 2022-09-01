@@ -16,11 +16,13 @@ public final class Store<State>: Unit, ObservableObject {
             // swiftlint:disable:next force_cast
             let newState = state as! State
 
-            if Thread.isMainThread {
-                self.currentState = newState
-            } else {
-                DispatchQueue.main.sync {
+            if !areEqual(self.currentState, newState) {
+                if Thread.isMainThread {
                     self.currentState = newState
+                } else {
+                    DispatchQueue.main.sync {
+                        self.currentState = newState
+                    }
                 }
             }
 
@@ -60,21 +62,31 @@ public final class Store<State>: Unit, ObservableObject {
     @discardableResult
     public func on<Payload>(
         name: String? = nil,
+        _ events: [Event<Payload>],
+        _ fn: @escaping (State, Payload) -> State
+    ) -> Self {
+        // swiftlint:disable:next force_cast
+        return onBase(name: name, events) { state, payload in fn(state, payload as! Payload) }
+    }
+
+    @discardableResult
+    public func on<Payload>(
+        name: String? = nil,
         _ event: Event<Payload>,
         _ fn: @escaping (State, Payload) -> State
     ) -> Self {
         // swiftlint:disable:next force_cast
-        return onBase(name: name, event) { state, payload in fn(state, payload as! Payload) }
+        return onBase(name: name, [event]) { state, payload in fn(state, payload as! Payload) }
     }
 
     @discardableResult
     public func on<Params, Done, Fail>(
         name: String? = nil,
-        _ event: Effect<Params, Done, Fail>,
+        _ effect: Effect<Params, Done, Fail>,
         _ fn: @escaping (State, Params) -> State
     ) -> Self {
         // swiftlint:disable:next force_cast
-        return onBase(name: name, event) { state, payload in fn(state, payload as! Params) }
+        return onBase(name: name, [effect]) { state, payload in fn(state, payload as! Params) }
     }
 
     public func getState() -> State {
@@ -85,14 +97,18 @@ public final class Store<State>: Unit, ObservableObject {
         launch(graphite, state)
     }
 
-    public func reset<T>(name: String? = nil, _ event: Event<T>) {
+    public func reset<T>(name: String? = nil, _ events: [Event<T>]) {
         if isDerived {
             preconditionFailure(".reset in derived store")
         }
 
         let nodeName = name ?? "\(self.name):reset"
 
-        on(name: nodeName, event) { _, _ in self.defaultState }
+        on(name: nodeName, events) { _, _ in self.defaultState }
+    }
+
+    public func reset<T>(name: String? = nil, _ event: Event<T>) {
+        reset(name: name, [event])
     }
 
     public func map<Mapped>(name: String? = nil, _ fn: @escaping (State) -> Mapped) -> Store<Mapped> {
@@ -117,7 +133,7 @@ public final class Store<State>: Unit, ObservableObject {
 
     // MARK: Private
 
-    private func onBase(name: String? = nil, _ unit: Unit, _ fn: @escaping (State, Any) -> State) -> Self {
+    private func onBase(name: String? = nil, _ units: [Unit], _ fn: @escaping (State, Any) -> State) -> Self {
         if isDerived {
             preconditionFailure("\(self.name).on in derived store")
         }
@@ -127,7 +143,7 @@ public final class Store<State>: Unit, ObservableObject {
         createNode(
             name: nodeName,
             priority: .pure,
-            from: [unit],
+            from: units,
             seq: [.compute(nodeName) { payload in fn(self.currentState, payload) }],
             to: [self]
         )

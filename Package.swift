@@ -8,14 +8,28 @@ let package = Package(
     products: [
         .library(
             name: "SwiftEffector",
-            targets: ["SwiftEffector"])
+            targets: ["SwiftEffector"]),
+
+        .library(
+            name: "SwiftEffectorForms",
+            targets: ["SwiftEffectorForms"]),
     ],
     dependencies: [],
     targets: [
         .target(
             name: "SwiftEffector",
             dependencies: []),
+
         .testTarget(
-            name: "SwiftEffectorTests",
-            dependencies: ["SwiftEffector"])
+            name: "EffectorTests",
+            dependencies: ["SwiftEffector"]),
+
+        .target(
+            name: "SwiftEffectorForms",
+            dependencies: ["SwiftEffector"]),
+
+        .testTarget(
+            name: "FormsTests",
+            dependencies: ["SwiftEffector", "SwiftEffectorForms"]),
+
     ])

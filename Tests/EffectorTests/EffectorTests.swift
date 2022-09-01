@@ -4,7 +4,57 @@
 import XCTest
 
 // swiftlint:disable:next type_body_length
-final class SwiftEffectorTests: XCTestCase {
+final class EffectorTests: XCTestCase {
+    func testRestore() {
+        let event = Event<Int>()
+
+        let store = restore(event, 0)
+
+        event(1)
+
+        XCTAssertEqual(store.getState(), 1)
+    }
+
+    func testRestoreOptional() {
+        let event = Event<Int>()
+
+        let store = restore(event)
+
+        XCTAssertEqual(store.getState(), nil)
+
+        event(1)
+
+        XCTAssertEqual(store.getState(), 1)
+    }
+
+    func testCombineFromDict() {
+        let a = Store<Any>(name: "a", "a")
+        let b = Store<Any>(name: "b", 1)
+
+        struct Combined: InitializableFromDict, Equatable {
+            internal init(a: String, b: Int) {
+                self.a = a
+                self.b = b
+            }
+
+            var a: String
+            var b: Int
+
+            init(_ dict: [String: Any]) {
+                self.a = dict["a"] as! String
+                self.b = dict["b"] as! Int
+            }
+        }
+
+        let c: Store<Combined> = combine([a, b])
+
+        XCTAssertEqual(c.getState(), Combined(a: "a", b: 1))
+
+        b.setState(2)
+
+        XCTAssertEqual(c.getState(), Combined(a: "a", b: 2))
+    }
+
     func testEventWatch() async throws {
         let event = Event<Int>()
 
@@ -526,5 +576,49 @@ final class SwiftEffectorTests: XCTestCase {
                 "watch"
             ]
         )
+    }
+
+    func testAllSatisfy() async throws {
+        let a = Store(2)
+        let b = Store(3)
+
+        let c = allSatisfy([a, b]) { $0 > 0 }
+
+        XCTAssert(c.getState())
+    }
+
+    func testAllSatisfyChanged() async throws {
+        let a = Store(-1)
+        let b = Store(3)
+
+        let c = allSatisfy([a, b]) { $0 > 0 }
+
+        XCTAssert(!c.getState())
+
+        a.setState(1)
+
+        XCTAssert(c.getState())
+    }
+
+    func testContains() async throws {
+        let a = Store(-1)
+        let b = Store(3)
+
+        let c = contains([a, b]) { $0 > 0 }
+
+        XCTAssert(c.getState())
+    }
+
+    func testContainsChanged() async throws {
+        let a = Store(-1)
+        let b = Store(-2)
+
+        let c = contains([a, b]) { $0 > 0 }
+
+        XCTAssert(!c.getState())
+
+        a.setState(1)
+
+        XCTAssert(c.getState())
     }
 }

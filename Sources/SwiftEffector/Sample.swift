@@ -41,6 +41,24 @@ func sampleBase<Payload, State, Mapped>(
     return targetEvent
 }
 
+func sampleBase<Payload, State, Mapped>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    source: Store<State>,
+    filter: Store<Bool>,
+    map: ((State, Payload) -> Mapped)? = nil,
+    target: Unit? = nil
+) -> Event<Mapped> {
+    return sampleBase(
+        name: name,
+        trigger: trigger,
+        source: source,
+        filter: { _, _ in filter.getState() },
+        map: map,
+        target: target
+    )
+}
+
 func sampleBase<Payload, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
@@ -85,6 +103,16 @@ func sampleBase<Payload, Mapped>(
     return targetEvent
 }
 
+func sampleBase<Payload, Mapped>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    filter: Store<Bool>,
+    map: ((Payload) -> Mapped)? = nil,
+    target: Unit? = nil
+) -> Event<Mapped> {
+    return sampleBase(name: name, trigger: trigger, filter: { _ in filter.getState() }, map: map, target: target)
+}
+
 // Sample with source
 
 @discardableResult
@@ -93,6 +121,17 @@ public func sample<Payload, State, Mapped>(
     trigger: Event<Payload>,
     source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil,
+    map: ((State, Payload) -> Mapped)? = nil
+) -> Event<Mapped> {
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, map: map)
+}
+
+@discardableResult
+public func sample<Payload, State, Mapped>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    source: Store<State>,
+    filter: Store<Bool>,
     map: ((State, Payload) -> Mapped)? = nil
 ) -> Event<Mapped> {
     sampleBase(name: name, trigger: trigger, source: source, filter: filter, map: map)
@@ -115,7 +154,31 @@ public func sample<Payload, State, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
+    filter: Store<Bool>,
+    map: ((State, Payload) -> Mapped)? = nil,
+    target: Event<Mapped>
+) -> Event<Mapped> {
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, map: map, target: target)
+}
+
+@discardableResult
+public func sample<Payload, State, Mapped>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil,
+    map: ((State, Payload) -> Mapped)? = nil,
+    target: Store<Mapped>
+) -> Event<Mapped> {
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, map: map, target: target)
+}
+
+@discardableResult
+public func sample<Payload, State, Mapped>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    source: Store<State>,
+    filter: Store<Bool>,
     map: ((State, Payload) -> Mapped)? = nil,
     target: Store<Mapped>
 ) -> Event<Mapped> {
@@ -128,6 +191,18 @@ public func sample<Payload, State, Mapped, Done, Fail>(
     trigger: Event<Payload>,
     source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil,
+    map: ((State, Payload) -> Mapped)? = nil,
+    target: Effect<Mapped, Done, Fail>
+) -> Event<Mapped> {
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, map: map, target: target)
+}
+
+@discardableResult
+public func sample<Payload, State, Mapped, Done, Fail>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    source: Store<State>,
+    filter: Store<Bool>,
     map: ((State, Payload) -> Mapped)? = nil,
     target: Effect<Mapped, Done, Fail>
 ) -> Event<Mapped> {
@@ -151,7 +226,28 @@ public func sample<Payload, State>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
+    filter: Store<Bool>
+) -> Event<State> {
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter)
+}
+
+@discardableResult
+public func sample<Payload, State>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil,
+    target: Event<State>
+) -> Event<State> {
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
+}
+
+@discardableResult
+public func sample<Payload, State>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    source: Store<State>,
+    filter: Store<Bool>,
     target: Event<State>
 ) -> Event<State> {
     sampleBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
@@ -169,11 +265,33 @@ public func sample<Payload, State>(
 }
 
 @discardableResult
+public func sample<Payload, State>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    source: Store<State>,
+    filter: Store<Bool>,
+    target: Store<State>
+) -> Event<State> {
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
+}
+
+@discardableResult
 public func sample<Payload, State, Done, Fail>(
     name: String? = nil,
     trigger: Event<Payload>,
     source: Store<State>,
     filter: ((State, Payload) -> Bool)? = nil,
+    target: Effect<State, Done, Fail>
+) -> Event<State> {
+    sampleBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
+}
+
+@discardableResult
+public func sample<Payload, State, Done, Fail>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    source: Store<State>,
+    filter: Store<Bool>,
     target: Effect<State, Done, Fail>
 ) -> Event<State> {
     sampleBase(name: name, trigger: trigger, source: source, filter: filter, target: target)
@@ -195,7 +313,28 @@ public func sample<Payload, Mapped>(
 public func sample<Payload, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
+    filter: Store<Bool>,
+    map: @escaping (Payload) -> Mapped
+) -> Event<Mapped> {
+    sampleBase(name: name, trigger: trigger, filter: filter, map: map)
+}
+
+@discardableResult
+public func sample<Payload, Mapped>(
+    name: String? = nil,
+    trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
+    map: @escaping (Payload) -> Mapped,
+    target: Event<Mapped>
+) -> Event<Mapped> {
+    sampleBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
+}
+
+@discardableResult
+public func sample<Payload, Mapped>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    filter: Store<Bool>,
     map: @escaping (Payload) -> Mapped,
     target: Event<Mapped>
 ) -> Event<Mapped> {
@@ -214,10 +353,32 @@ public func sample<Payload, Mapped>(
 }
 
 @discardableResult
+public func sample<Payload, Mapped>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    filter: Store<Bool>,
+    map: @escaping (Payload) -> Mapped,
+    target: Store<Mapped>
+) -> Event<Mapped> {
+    sampleBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
+}
+
+@discardableResult
 public func sample<Payload, Mapped, Done, Fail>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
+    map: @escaping (Payload) -> Mapped,
+    target: Effect<Payload, Done, Fail>
+) -> Event<Mapped> {
+    sampleBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
+}
+
+@discardableResult
+public func sample<Payload, Mapped, Done, Fail>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    filter: Store<Bool>,
     map: @escaping (Payload) -> Mapped,
     target: Effect<Payload, Done, Fail>
 ) -> Event<Mapped> {
@@ -236,10 +397,29 @@ func sample<Payload>(
 }
 
 @discardableResult
+func sample<Payload>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    filter: Store<Bool>
+) -> Event<Payload> {
+    sampleBase(name: name, trigger: trigger, filter: filter)
+}
+
+@discardableResult
 public func sample<Payload>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
+    target: Event<Payload>
+) -> Event<Payload> {
+    sampleBase(name: name, trigger: trigger, filter: filter, target: target)
+}
+
+@discardableResult
+public func sample<Payload>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    filter: Store<Bool>,
     target: Event<Payload>
 ) -> Event<Payload> {
     sampleBase(name: name, trigger: trigger, filter: filter, target: target)
@@ -256,10 +436,30 @@ public func sample<Payload>(
 }
 
 @discardableResult
+public func sample<Payload>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    filter: Store<Bool>,
+    target: Store<Payload>
+) -> Event<Payload> {
+    sampleBase(name: name, trigger: trigger, filter: filter, target: target)
+}
+
+@discardableResult
 public func sample<Payload, Done, Fail>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
+    target: Effect<Payload, Done, Fail>
+) -> Event<Payload> {
+    sampleBase(name: name, trigger: trigger, filter: filter, target: target)
+}
+
+@discardableResult
+public func sample<Payload, Done, Fail>(
+    name: String? = nil,
+    trigger: Event<Payload>,
+    filter: Store<Bool>,
     target: Effect<Payload, Done, Fail>
 ) -> Event<Payload> {
     sampleBase(name: name, trigger: trigger, filter: filter, target: target)
