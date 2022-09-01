@@ -2,7 +2,7 @@ import Foundation
 import SwiftEffector
 import SwiftUI
 
-protocol FormValues: InitializableFromDict, CaseIterable {
+protocol FormValues: InitializableFromDict {
     subscript<T>(_ key: String) -> T { get set }
 }
 
@@ -195,28 +195,14 @@ final class EForm<Values: FormValues> {
                 var errors = [ValidationError<Value>]()
 
                 for rule in rules {
-                    switch rule.validator {
-                    case .bool(let fn):
-                        if fn(value, values) {
-                            errors.append(
-                                ValidationError(rule: rule.name,
-                                                value: value,
-                                                errorText: rule.errorText)
+                    if let errorText = rule.validator(value, values) {
+                        errors.append(
+                            ValidationError(
+                                rule: rule.name,
+                                value: value,
+                                errorText: errorText
                             )
-                        }
-
-                    case .withMessage(let fn):
-                        let result = fn(value, values)
-
-                        if !result.isValid {
-                            errors.append(
-                                ValidationError(
-                                    rule: rule.name,
-                                    value: value,
-                                    errorText: result.errorText
-                                )
-                            )
-                        }
+                        )
                     }
                 }
                 return errors

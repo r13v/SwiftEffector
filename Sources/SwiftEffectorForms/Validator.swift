@@ -1,24 +1,13 @@
-struct ValidationRule<Value, Values> {
+public struct ValidationRule<Value, Values> {
     var name: String
-    var errorText: String?
-    var validator: Validator<Value, Values>
+    var validator: (Value, Values) -> String?
 }
 
-enum Validator<Value, Values> {
-    case bool((Value, Values) -> Bool)
-    case withMessage((Value, Values) -> ValidationResult)
-}
-
-struct ValidationResult {
-    var isValid: Bool
-    var errorText: String?
-}
-
-enum ValidationEvent {
+public enum ValidationEvent {
     case submit, blur, change
 }
 
-struct ValidationError<Value> {
+public struct ValidationError<Value> {
     var rule: String
     var value: Value
     var errorText: String?
