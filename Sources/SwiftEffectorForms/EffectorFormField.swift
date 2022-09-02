@@ -1,14 +1,14 @@
 import SwiftEffector
 
-final class EFormField<Value, Values> {
+final class EffectorFormField<Value, Values> {
     // MARK: Lifecycle
 
-    init(_ config: Config<Value, Values>) {
+    init(_ config: EffectorFormFieldConfig<Value, Values>) {
         self.config = config
 
         let initialValue = config.initialValue()
 
-        self.name = config.name
+        self.name = config.keyPath.asString
         self.value = Store(initialValue)
 
         let errors = Store<[ValidationError<Value>]>([])
@@ -41,7 +41,7 @@ final class EFormField<Value, Values> {
 
     // MARK: Internal
 
-    var config: Config<Value, Values>
+    var config: EffectorFormFieldConfig<Value, Values>
     var name: String
     var value: Store<Value>
     var errors: Store<[ValidationError<Value>]>
@@ -65,7 +65,7 @@ final class EFormField<Value, Values> {
     var filter = Store(true)
 }
 
-extension EFormField {
+extension EffectorFormField {
     struct FieldData<Value> {
         var value: Value
         var errors: [ValidationError<Value>]
@@ -77,34 +77,32 @@ extension EFormField {
     }
 }
 
-extension EFormField {
+extension EffectorFormField {
     struct FormFieldError {
         var rule: String
         var errorText: String?
     }
 }
 
-extension EFormField {
-    struct Config<Value, Values> {
-        // MARK: Lifecycle
+struct EffectorFormFieldConfig<Value, Values> {
+    // MARK: Lifecycle
 
-        internal init(
-            name: String,
-            initialValue: @autoclosure @escaping () -> Value,
-            rules: [ValidationRule<Value, Values>] = [],
-            validateOn: Set<ValidationEvent> = Set([.submit])
-        ) {
-            self.name = name
-            self.initialValue = initialValue
-            self.rules = rules
-            self.validateOn = validateOn
-        }
-
-        // MARK: Internal
-
-        var name: String
-        var initialValue: () -> Value
-        var rules: [ValidationRule<Value, Values>] = []
-        var validateOn: Set<ValidationEvent> = Set([.submit])
+    internal init(
+        keyPath: KeyPath<Values, Value>,
+        initialValue: @autoclosure @escaping () -> Value,
+        rules: [ValidationRule<Value, Values>] = [],
+        validateOn: Set<ValidationEvent> = Set([.submit])
+    ) {
+        self.keyPath = keyPath
+        self.initialValue = initialValue
+        self.rules = rules
+        self.validateOn = validateOn
     }
+
+    // MARK: Internal
+
+    var keyPath: KeyPath<Values, Value>
+    var initialValue: () -> Value
+    var rules: [ValidationRule<Value, Values>] = []
+    var validateOn: Set<ValidationEvent> = Set([.submit])
 }

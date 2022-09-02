@@ -18,6 +18,10 @@ public final class Node {
 
     // MARK: Internal
 
+    enum Kind: String {
+        case regular, event, store, effect
+    }
+
     enum Step {
         case compute(String, (Any) -> Any)
         case filter(String, (Any) -> Bool)
@@ -29,10 +33,6 @@ public final class Node {
         case combine = 3 // combine
         case sample = 4 // sample
         case effect = 5 // watch, effect handler
-    }
-
-    enum Kind: String {
-        case regular, event, store, effect
     }
 
     let id: Int

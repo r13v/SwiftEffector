@@ -1,3 +1,5 @@
+import Foundation
+
 public func combine<Combined, A, B>(
     _ a: Store<A>,
     _ b: Store<B>,
@@ -142,28 +144,29 @@ public func combine<Combined, A, B, C, D, E, F>(
     return combined
 }
 
-public protocol InitializableFromDict {
-    init(_ dict: [String: Any])
-}
+public func combine<Combined: Codable>(_ stores: [Store<Any>]) -> Store<Combined> {
+    let jsonDecoder = JSONDecoder()
 
-public func combine<Combined: InitializableFromDict>(_ stores: [Store<Any>]) -> Store<Combined> {
     let combined = Store<Combined>(
         name: "combine",
-        group(stores),
+        group(decoder: jsonDecoder, stores: stores),
         isDerived: true
     )
 
-    func group(_ stores: [Store<Any>]) -> Combined {
+    func group(decoder: JSONDecoder, stores: [Store<Any>]) -> Combined {
         var dict = [String: Any]()
 
         for store in stores {
             dict[store.name] = store.getState()
         }
 
-        return Combined(dict)
+        let jsonData = try! JSONSerialization.data(withJSONObject: dict, options: [])
+        let result = try! jsonDecoder.decode(Combined.self, from: jsonData)
+
+        return result
     }
 
-    let stepFn: (Any) -> Combined = { _ in group(stores) }
+    let stepFn: (Any) -> Combined = { _ in group(decoder: jsonDecoder, stores: stores) }
 
     createNode(
         name: "combine",

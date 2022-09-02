@@ -2,15 +2,11 @@ import Foundation
 import SwiftEffector
 import SwiftUI
 
-protocol FormValues: InitializableFromDict {
-    subscript<T>(_ key: String) -> T { get set }
-}
-
-final class EForm<Values: FormValues> {
+final class EffectorForm<Values: Codable> {
     // MARK: Lifecycle
 
-    init(config: Config<Values>) {
-        var fields = [String: EFormField<Any, Values>]()
+    init(config: EffectorFormConfig<Values>) {
+        var fields = [String: EffectorFormField<Any, Values>]()
 
         self.submit = Event<Void>()
         self.validate = Event<Void>()
@@ -31,7 +27,7 @@ final class EForm<Values: FormValues> {
         var values = [Store<Any>]()
 
         for fieldConfig in config.fields {
-            let field = EFormField(fieldConfig)
+            let field = EffectorFormField(fieldConfig)
 
             fields[field.name] = field
 
@@ -105,7 +101,7 @@ final class EForm<Values: FormValues> {
 
     var values: Store<Values>
 
-    var fields: [String: EFormField<Any, Values>]
+    var fields: [String: EffectorFormField<Any, Values>]
 
     var isValid: Store<Bool>
     var isDirty: Store<Bool>
@@ -133,7 +129,7 @@ final class EForm<Values: FormValues> {
         resetFormEvent: Event<Void>,
         resetValues: Event<Void>,
         resetErrorsFormEvent: Event<Void>,
-        field: EFormField<Any, Values>,
+        field: EffectorFormField<Any, Values>,
         formValidationEvents: Set<ValidationEvent>
     ) {
         let fieldConfig = field.config
@@ -212,7 +208,7 @@ final class EForm<Values: FormValues> {
     }
 
     private static func bindChangeEvent(
-        field: EFormField<Any, Values>,
+        field: EffectorFormField<Any, Values>,
         setForm: Event<Values>,
         resetForm: Event<Void>,
         resetTouched: Event<Void>,
@@ -230,12 +226,22 @@ final class EForm<Values: FormValues> {
 
         field.value
             .on(field.changed) { _, value in value }
-            .on(setForm) { _, values in values[field.name] } // todo
+            .on(setForm) { state, values in
+                let mirror = Mirror(reflecting: values)
+
+                for child in mirror.children {
+                    if child.label == field.name {
+                        return child.value
+                    }
+                }
+
+                return state
+            }
             .reset([field.reset, field.resetValue, resetValues, resetForm])
     }
 }
 
-extension EForm {
+extension EffectorForm {
     struct Meta {
         var isValid: Bool
         var isDirty: Bool
@@ -243,10 +249,8 @@ extension EForm {
     }
 }
 
-extension EForm {
-    struct Config<Values> {
-        var fields: [EFormField<Any, Values>.Config<Any, Values>] = []
-        var validateOn: Set<ValidationEvent> = Set([.submit])
-        var filter: Store<Bool> = Store(true)
-    }
+struct EffectorFormConfig<Values> {
+    var fields: [EffectorFormFieldConfig<Any, Values>] = []
+    var validateOn: Set<ValidationEvent> = Set([.submit])
+    var filter: Store<Bool> = Store(true)
 }
