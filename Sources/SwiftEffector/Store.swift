@@ -112,7 +112,7 @@ public final class Store<State>: Unit, ObservableObject {
     }
 
     public func map<Mapped>(name: String? = nil, _ fn: @escaping (State) -> Mapped) -> Store<Mapped> {
-        let nodeName = name ?? "\(self.name):reset"
+        let nodeName = name ?? "\(self.name):map"
 
         let mapped = Store<Mapped>(name: nodeName, fn(currentState), isDerived: true)
 

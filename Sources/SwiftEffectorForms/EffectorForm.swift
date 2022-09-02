@@ -5,62 +5,114 @@ import SwiftUI
 final class EffectorForm<Values: Codable> {
     // MARK: Lifecycle
 
-    init(config: EffectorFormConfig<Values>) {
-        var fields = [String: EffectorFormField<Any, Values>]()
+    init(validateOn: Set<ValidationEvent> = Set([.submit]), filter: Store<Bool> = Store(true)) {
+        self.validateOn = validateOn
+        self.filter = filter
+    }
 
-        self.submit = Event<Void>()
-        self.validate = Event<Void>()
-        self.resetForm = Event<Void>()
-        self.setForm = Event<Values>()
+    // MARK: Public
 
-        self.resetTouched = Event<Void>()
-        self.resetValues = Event<Void>()
-        self.resetErrors = Event<Void>()
+    public var values: Store<Values>!
 
-        self.submitted = Event<Values>()
-        self.validated = Event<Values>()
+    public var isValid: Store<Bool>!
+    public var isDirty: Store<Bool>!
+    public var isTouched: Store<Bool>!
+    public var meta: Store<Meta>!
 
-        var isValidFlags = [Store<Bool>]()
-        var isDirtyFlags = [Store<Bool>]()
-        var isTouchedFlags = [Store<Bool>]()
+    public var submit = Event<Void>()
+    public var validate = Event<Void>()
+    public var resetForm = Event<Void>()
+    public var setForm = Event<Values>()
 
-        var values = [Store<Any>]()
+    public var resetTouched = Event<Void>()
+    public var resetValues = Event<Void>()
+    public var resetErrors = Event<Void>()
 
-        for fieldConfig in config.fields {
-            let field = EffectorFormField(fieldConfig)
+    public var submitted = Event<Values>()
+    public var validated = Event<Values>()
 
-            fields[field.name] = field
+    public func register<Value: Equatable>(
+        _ name: String,
+        _ keyPath: KeyPath<Values, Value>,
+        _ initialValue: @autoclosure @escaping () -> Value,
+        _ rules: [ValidationRule<Value, Values>] = []
+    ) -> EffectorFormField<Value, Values> {
+        return register(.init(name: name, keyPath: keyPath, initialValue: initialValue(), rules: rules))
+    }
 
-            isValidFlags.append(field.isValid)
-            isDirtyFlags.append(field.isDirty)
-            isTouchedFlags.append(field.isTouched)
-            values.append(field.value as Store<Any>)
+    public func register<Value: Equatable>(
+        _ name: String,
+        _ keyPath: KeyPath<Values, Value>,
+        _ initialValue: @autoclosure @escaping () -> Value,
+        _ rule: Validator<Value, Values>?
+    ) -> EffectorFormField<Value, Values> {
+        return register(
+            .init(
+                name: name,
+                keyPath: keyPath,
+                initialValue: initialValue(),
+                rules: rule != nil ? [.init(name: name, validator: rule!)] : []
+            )
+        )
+    }
+
+    public func register<Value: Equatable>(_ fieldConfig: EffectorFormFieldConfig<Value, Values>) -> EffectorFormField<Value, Values> {
+        let field = EffectorFormField(fieldConfig)
+
+        isValidFlags.append(field.isValid)
+        isDirtyFlags.append(field.isDirty)
+        isTouchedFlags.append(field.isTouched)
+        valuesStores.append(field.value.map(name: field.name) { $0 as Any })
+
+        Self.bindChangeEvent(
+            field: field,
+            setForm: setForm,
+            resetForm: resetForm,
+            resetTouched: resetTouched,
+            resetValues: resetValues
+        )
+
+        validationBindings.append { values in
+            Self.bindValidation(
+                values: values,
+                validateFormEvent: self.validate,
+                submitEvent: self.submit,
+                resetFormEvent: self.resetForm,
+                resetValues: self.resetValues,
+                resetErrorsFormEvent: self.resetErrors,
+                field: field,
+                formValidationEvents: self.validateOn
+            )
         }
 
-        let isValid = allSatisfy(isValidFlags) { $0 }
-        let isDirty = allSatisfy(isDirtyFlags) { $0 }
-        let isTouched = allSatisfy(isTouchedFlags) { $0 }
+        return field
+    }
 
-        let meta = combine(isValid, isDirty, isTouched) { isValid, isDirty, isTouched in
+    @discardableResult
+    public func build() -> Self {
+        checkRegisteredFields()
+
+        isValid = allSatisfy(isValidFlags) { $0 }
+        isDirty = allSatisfy(isDirtyFlags) { $0 }
+        isTouched = allSatisfy(isTouchedFlags) { $0 }
+
+        meta = combine(isValid, isDirty, isTouched) { isValid, isDirty, isTouched in
             Meta(isValid: isValid, isDirty: isDirty, isTouched: isTouched)
         }
 
-        self.meta = meta
+        values = combine(valuesStores)
 
-        self.values = combine(values)
-        self.fields = fields
-        self.isValid = isValid
-        self.isDirty = isDirty
-        self.isTouched = isTouched
+        validationBindings.forEach { bind in bind(values) }
+        validationBindings = []
 
         let submitWithFormData = sample(
             trigger: submit,
-            source: self.values
+            source: values
         )
 
         let validateWithFormData = sample(
             trigger: validate,
-            source: self.values
+            source: values
         )
 
         sample(
@@ -75,61 +127,32 @@ final class EffectorForm<Values: Codable> {
             target: validated
         )
 
-        for (_, field) in fields {
-            Self.bindChangeEvent(
-                field: field,
-                setForm: setForm,
-                resetForm: resetForm,
-                resetTouched: resetTouched,
-                resetValues: resetValues
-            )
-
-            Self.bindValidation(
-                values: self.values,
-                validateFormEvent: validate,
-                submitEvent: submit,
-                resetFormEvent: resetForm,
-                resetValues: resetValues,
-                resetErrorsFormEvent: resetErrors,
-                field: field,
-                formValidationEvents: config.validateOn
-            )
-        }
+        return self
     }
 
     // MARK: Internal
 
-    var values: Store<Values>
-
-    var fields: [String: EffectorFormField<Any, Values>]
-
-    var isValid: Store<Bool>
-    var isDirty: Store<Bool>
-    var isTouched: Store<Bool>
-    var meta: Store<Meta>
-
-    var submit: Event<Void>
-    var validate: Event<Void>
-    var resetForm: Event<Void>
-    var setForm: Event<Values>
-
-    var resetTouched: Event<Void>
-    var resetValues: Event<Void>
-    var resetErrors: Event<Void>
-
-    var submitted: Event<Values>
-    var validated: Event<Values>
+    var validateOn: Set<ValidationEvent>
+    var filter: Store<Bool>
 
     // MARK: Private
 
-    private static func bindValidation(
+    private var registeredFields = Set<String>()
+    private var validationBindings = [(values: Store<Values>) -> Void]()
+
+    private var isValidFlags = [Store<Bool>]()
+    private var isDirtyFlags = [Store<Bool>]()
+    private var isTouchedFlags = [Store<Bool>]()
+    private var valuesStores = [Store<Any>]()
+
+    private static func bindValidation<T>(
         values: Store<Values>,
         validateFormEvent: Event<Void>,
         submitEvent: Event<Void>,
         resetFormEvent: Event<Void>,
         resetValues: Event<Void>,
         resetErrorsFormEvent: Event<Void>,
-        field: EffectorFormField<Any, Values>,
+        field: EffectorFormField<T, Values>,
         formValidationEvents: Set<ValidationEvent>
     ) {
         let fieldConfig = field.config
@@ -137,7 +160,7 @@ final class EffectorForm<Values: Codable> {
         let validator = combineValidationRules(fieldConfig.rules)
         let validateOn = formValidationEvents.union(fieldConfig.validateOn)
 
-        var validationEvents = [Event<(Any, Values)>]()
+        var validationEvents = [Event<(T, Values)>]()
 
         let validationData = combine(field.value, values) { value, values in (value, values) }
 
@@ -207,8 +230,8 @@ final class EffectorForm<Values: Codable> {
         return validator
     }
 
-    private static func bindChangeEvent(
-        field: EffectorFormField<Any, Values>,
+    private static func bindChangeEvent<T>(
+        field: EffectorFormField<T, Values>,
         setForm: Event<Values>,
         resetForm: Event<Void>,
         resetTouched: Event<Void>,
@@ -231,13 +254,21 @@ final class EffectorForm<Values: Codable> {
 
                 for child in mirror.children {
                     if child.label == field.name {
-                        return child.value
+                        return child.value as! T
                     }
                 }
 
                 return state
             }
             .reset([field.reset, field.resetValue, resetValues, resetForm])
+    }
+
+    private func checkRegisteredFields() {
+        let formFieldsNames = Set(Mirror(reflecting: Values.self).children.map { $0.label! })
+
+        if formFieldsNames != registeredFields {
+            preconditionFailure("Registered fields missmatch.")
+        }
     }
 }
 

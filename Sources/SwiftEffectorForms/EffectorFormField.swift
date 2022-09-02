@@ -1,14 +1,15 @@
+import Foundation
 import SwiftEffector
 
-final class EffectorFormField<Value, Values> {
+final class EffectorFormField<Value: Equatable, Values: Equatable> {
     // MARK: Lifecycle
 
     init(_ config: EffectorFormFieldConfig<Value, Values>) {
         self.config = config
+        self.name = config.name
 
         let initialValue = config.initialValue()
 
-        self.name = config.keyPath.asString
         self.value = Store(initialValue)
 
         let errors = Store<[ValidationError<Value>]>([])
@@ -66,7 +67,7 @@ final class EffectorFormField<Value, Values> {
 }
 
 extension EffectorFormField {
-    struct FieldData<Value> {
+    struct FieldData<Value: Equatable> {
         var value: Value
         var errors: [ValidationError<Value>]
         var firstError: ValidationError<Value>?
@@ -88,11 +89,13 @@ struct EffectorFormFieldConfig<Value, Values> {
     // MARK: Lifecycle
 
     internal init(
+        name: String,
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
         rules: [ValidationRule<Value, Values>] = [],
         validateOn: Set<ValidationEvent> = Set([.submit])
     ) {
+        self.name = name
         self.keyPath = keyPath
         self.initialValue = initialValue
         self.rules = rules
@@ -101,6 +104,7 @@ struct EffectorFormFieldConfig<Value, Values> {
 
     // MARK: Internal
 
+    var name: String
     var keyPath: KeyPath<Values, Value>
     var initialValue: () -> Value
     var rules: [ValidationRule<Value, Values>] = []
