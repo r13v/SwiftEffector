@@ -1,5 +1,5 @@
 import Foundation
-import SwiftEffector
+import Effector
 import SwiftUI
 
 final class EffectorForm<Values: Codable> {

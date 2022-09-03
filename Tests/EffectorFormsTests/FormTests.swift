@@ -1,6 +1,6 @@
 
-import SwiftEffector
-@testable import SwiftEffectorForms
+import Effector
+@testable import EffectorForms
 import XCTest
 
 struct SignInForm: Codable, Equatable {
@@ -753,7 +753,7 @@ final class FieldTests: XCTestCase {
         field.change("test@example.com")
         XCTAssertEqual(field.value.getState(), "test@example.com")
         XCTAssertNil(field.firstError.getState())
-        
+
         field.resetValue()
         XCTAssertEqual(field.value.getState(), "")
         XCTAssertEqual(

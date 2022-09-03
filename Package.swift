@@ -3,33 +3,34 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftEffector",
+    name: "Effector",
     platforms: [.macOS(.v11), .iOS(.v14)],
     products: [
         .library(
-            name: "SwiftEffector",
-            targets: ["SwiftEffector"]),
+            name: "Effector",
+            targets: ["Effector"]),
 
         .library(
-            name: "SwiftEffectorForms",
-            targets: ["SwiftEffectorForms"]),
+            name: "EffectorForms",
+            targets: ["EffectorForms"]),
     ],
-    dependencies: [],
     targets: [
         .target(
-            name: "SwiftEffector",
-            dependencies: []),
+            name: "Effector",
+            dependencies: [],
+            path: "Effector"),
 
         .testTarget(
             name: "EffectorTests",
-            dependencies: ["SwiftEffector"]),
+            dependencies: ["Effector"]),
 
         .target(
-            name: "SwiftEffectorForms",
-            dependencies: ["SwiftEffector"]),
+            name: "EffectorForms",
+            dependencies: ["Effector"],
+            path: "EffectorForms"),
 
         .testTarget(
-            name: "FormsTests",
-            dependencies: ["SwiftEffector", "SwiftEffectorForms"]),
-
+            name: "EffectorFormsTests",
+            dependencies: ["Effector", "EffectorForms"]
+        ),
     ])
