@@ -46,6 +46,10 @@ public final class Node {
     func appendNext(_ node: Node) {
         next.append(node)
     }
+    
+    func prependNext(_ node: Node) {
+        next.insert(node, at: 0)
+    }
 
     // MARK: Private
 

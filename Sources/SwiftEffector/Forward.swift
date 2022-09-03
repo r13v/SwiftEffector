@@ -6,3 +6,15 @@ public func forward(from: [Unit], to: [Unit]) {
         to: to
     )
 }
+
+public func forward(from: Unit, to: Unit) {
+    forward(from: [from], to: [to])
+}
+
+public func forward(from: [Unit], to: Unit) {
+    forward(from: from, to: [to])
+}
+
+public func forward(from: Unit, to: [Unit]) {
+    forward(from: [from], to: to)
+}

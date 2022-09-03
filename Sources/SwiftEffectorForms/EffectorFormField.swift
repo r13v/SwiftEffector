@@ -7,6 +7,7 @@ final class EffectorFormField<Value: Equatable, Values: Equatable> {
     init(_ config: EffectorFormFieldConfig<Value, Values>) {
         self.config = config
         self.name = config.name
+        self.filter = config.filter
 
         let initialValue = config.initialValue()
 
@@ -17,7 +18,7 @@ final class EffectorFormField<Value: Equatable, Values: Equatable> {
 
         let isValid = firstError.map { $0 == nil }
 
-        let isDirty = value.map { areEqual($0, initialValue) }
+        let isDirty = value.map { !areEqual($0, initialValue) }
 
         let isTouched = Store(false)
 
@@ -38,32 +39,38 @@ final class EffectorFormField<Value: Equatable, Values: Equatable> {
                 isTouched: isTouched
             )
         }
+
+        isTouched.reset(resetTouched)
     }
+
+    // MARK: Public
+
+    public var name: String
+    public var value: Store<Value>
+    public var errors: Store<[ValidationError<Value>]>
+    public var firstError: Store<ValidationError<Value>?>
+
+    public var isValid: Store<Bool>
+    public var isDirty: Store<Bool>
+    public var isTouched: Store<Bool>
+
+    public var field: Store<FieldData<Value>>
+
+    public var change = Event<Value>()
+    public var changed = Event<Value>()
+    public var blur = Event<Void>()
+    public var addError = Event<FormFieldError>()
+    public var validate = Event<Void>()
+    public var reset = Event<Void>()
+    public var setValue = Event<Value>()
+    public var resetErrors = Event<Void>()
+    public var resetTouched = Event<Void>()
+    public var resetValue = Event<Void>()
+    public var filter: Store<Bool>
 
     // MARK: Internal
 
     var config: EffectorFormFieldConfig<Value, Values>
-    var name: String
-    var value: Store<Value>
-    var errors: Store<[ValidationError<Value>]>
-    var firstError: Store<ValidationError<Value>?>
-
-    var isValid: Store<Bool>
-    var isDirty: Store<Bool>
-    var isTouched: Store<Bool>
-
-    var field: Store<FieldData<Value>>
-
-    var change = Event<Value>()
-    var changed = Event<Value>()
-    var blur = Event<Void>()
-    var addError = Event<FormFieldError>()
-    var validate = Event<Void>()
-    var reset = Event<Void>()
-    var setValue = Event<Value>()
-    var resetErrors = Event<Void>()
-    var resetValue = Event<Void>()
-    var filter = Store(true)
 }
 
 extension EffectorFormField {
@@ -78,13 +85,6 @@ extension EffectorFormField {
     }
 }
 
-extension EffectorFormField {
-    struct FormFieldError {
-        var rule: String
-        var errorText: String?
-    }
-}
-
 struct EffectorFormFieldConfig<Value, Values> {
     // MARK: Lifecycle
 
@@ -93,13 +93,15 @@ struct EffectorFormFieldConfig<Value, Values> {
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
         rules: [ValidationRule<Value, Values>] = [],
-        validateOn: Set<ValidationEvent> = Set([.submit])
+        validateOn: Set<ValidationEvent> = Set([.submit]),
+        filter: Store<Bool> = Store(true)
     ) {
         self.name = name
         self.keyPath = keyPath
         self.initialValue = initialValue
         self.rules = rules
         self.validateOn = validateOn
+        self.filter = filter
     }
 
     // MARK: Internal
@@ -109,4 +111,128 @@ struct EffectorFormFieldConfig<Value, Values> {
     var initialValue: () -> Value
     var rules: [ValidationRule<Value, Values>] = []
     var validateOn: Set<ValidationEvent> = Set([.submit])
+    var filter: Store<Bool>
+}
+
+public struct FormFieldError {
+    var rule: String
+    var errorText: String?
+}
+
+func bindChangeEvent<Values, T>(
+    field: EffectorFormField<T, Values>,
+    setForm: Event<Values>,
+    resetForm: Event<Void>,
+    resetTouched: Event<Void>,
+    resetValues: Event<Void>
+) {
+    field.isTouched
+        .on(field.changed) { _, _ in true }
+        .reset([field.reset, resetForm, resetTouched])
+
+    sample(
+        trigger: field.change,
+        filter: field.filter,
+        target: field.changed
+    )
+
+    field.value
+        .on(field.changed) { _, value in value }
+        .on(setForm) { state, values in
+            let mirror = Mirror(reflecting: values)
+
+            for child in mirror.children {
+                if child.label == field.name {
+                    return child.value as! T
+                }
+            }
+
+            return state
+        }
+        .reset([field.reset, field.resetValue, resetValues, resetForm])
+}
+
+func bindValidation<T, Values>(
+    values: Store<Values>,
+    validateFormEvent: Event<Void>,
+    submitEvent: Event<Void>,
+    resetFormEvent: Event<Void>,
+    resetValues: Event<Void>,
+    resetErrorsFormEvent: Event<Void>,
+    field: EffectorFormField<T, Values>,
+    formValidationEvents: Set<ValidationEvent>
+) {
+    let fieldConfig = field.config
+
+    let validator = combineValidationRules(fieldConfig.rules)
+    let validateOn = formValidationEvents.union(fieldConfig.validateOn)
+
+    var validationEvents = [Event<(T, Values)>]()
+
+    let validationData = combine(field.value, values) { value, values in (value, values) }
+
+    if validateOn.contains(.submit) {
+        let trigger = sample(trigger: submitEvent, source: validationData)
+        validationEvents.append(trigger)
+    }
+
+    if validateOn.contains(.blur) {
+        let trigger = sample(trigger: field.blur, source: validationData)
+        validationEvents.append(trigger)
+    }
+
+    if validateOn.contains(.change) {
+        let changed = merge(field.changed.map { _ in }, field.resetValue, resetValues)
+        let trigger = sample(trigger: changed, source: validationData)
+        validationEvents.append(trigger)
+    }
+
+    validationEvents.append(
+        sample(trigger: field.validate, source: validationData)
+    )
+
+    validationEvents.append(
+        sample(trigger: validateFormEvent, source: validationData)
+    )
+
+    let addErrorWithValue = sample(
+        trigger: field.addError,
+        source: field.value,
+        map: { value, error in
+            ValidationError(rule: error.rule, value: value, errorText: error.errorText)
+        }
+    )
+
+    field.errors
+        .on(validationEvents) { _, data in validator(data.0, data.1) }
+        .on(addErrorWithValue) { list, error in list + [error] }
+        .reset([field.resetErrors, resetFormEvent, field.reset, resetErrorsFormEvent])
+
+    if !validateOn.contains(.change) {
+        field.errors.reset(field.changed)
+    }
+}
+
+func combineValidationRules<Value, Values>(
+    _ rules: [ValidationRule<Value, Values>]
+) -> (Value, Values) -> [ValidationError<Value>] {
+    let validator: (_ value: Value, _ values: Values) -> [ValidationError<Value>] =
+        { value, values in
+            var errors = [ValidationError<Value>]()
+
+            for rule in rules {
+                if let errorText = rule.validator(value, values) {
+                    errors.append(
+                        ValidationError(
+                            rule: rule.name,
+                            value: value,
+                            errorText: errorText
+                        )
+                    )
+                }
+            }
+            return errors
+        }
+
+    return validator
 }

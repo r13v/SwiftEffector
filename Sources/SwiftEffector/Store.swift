@@ -127,6 +127,24 @@ public final class Store<State>: Unit, ObservableObject {
         return mapped
     }
 
+    public func erased(name: String? = nil) -> Store<Any> {
+        let nodeName = name ?? "\(self.name):erased"
+
+        let erased = Store<Any>(name: nodeName, currentState, isDerived: true)
+
+        let node = Node(
+            name: nodeName,
+            kind: .regular,
+            priority: .pure,
+            next: [erased.graphite],
+            seq: []
+        )
+
+        graphite.prependNext(node)
+
+        return erased
+    }
+
     // MARK: Internal
 
     var isDerived: Bool
