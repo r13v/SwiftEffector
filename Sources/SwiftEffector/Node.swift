@@ -18,6 +18,10 @@ public final class Node {
 
     // MARK: Internal
 
+    enum Kind: String {
+        case regular, event, store, effect
+    }
+
     enum Step {
         case compute(String, (Any) -> Any)
         case filter(String, (Any) -> Bool)
@@ -31,10 +35,6 @@ public final class Node {
         case effect = 5 // watch, effect handler
     }
 
-    enum Kind: String {
-        case regular, event, store, effect
-    }
-
     let id: Int
     let name: String
     let kind: Kind
@@ -45,6 +45,10 @@ public final class Node {
 
     func appendNext(_ node: Node) {
         next.append(node)
+    }
+    
+    func prependNext(_ node: Node) {
+        next.insert(node, at: 0)
     }
 
     // MARK: Private
