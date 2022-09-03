@@ -3,7 +3,7 @@
  [Effector](https://effector.dev/) port.
 
 ```swift
-import SwiftEffector
+import Effector
 import SwiftUI
 
 let store = Store(0)

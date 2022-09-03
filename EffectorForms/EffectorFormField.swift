@@ -1,5 +1,5 @@
 import Foundation
-import SwiftEffector
+import Effector
 
 final class EffectorFormField<Value: Equatable, Values: Equatable> {
     // MARK: Lifecycle

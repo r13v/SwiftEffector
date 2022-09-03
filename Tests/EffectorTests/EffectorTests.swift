@@ -1,6 +1,6 @@
 // swiftlint:disable file_length
 
-@testable import SwiftEffector
+@testable import Effector
 import XCTest
 
 // swiftlint:disable:next type_body_length
@@ -25,34 +25,6 @@ final class EffectorTests: XCTestCase {
         event(1)
 
         XCTAssertEqual(store.getState(), 1)
-    }
-
-    func testCombineFromDict() {
-        let a = Store<Any>(name: "a", "a")
-        let b = Store<Any>(name: "b", 1)
-
-        struct Combined: InitializableFromDict, Equatable {
-            internal init(a: String, b: Int) {
-                self.a = a
-                self.b = b
-            }
-
-            var a: String
-            var b: Int
-
-            init(_ dict: [String: Any]) {
-                self.a = dict["a"] as! String
-                self.b = dict["b"] as! Int
-            }
-        }
-
-        let c: Store<Combined> = combine([a, b])
-
-        XCTAssertEqual(c.getState(), Combined(a: "a", b: 1))
-
-        b.setState(2)
-
-        XCTAssertEqual(c.getState(), Combined(a: "a", b: 2))
     }
 
     func testEventWatch() async throws {
