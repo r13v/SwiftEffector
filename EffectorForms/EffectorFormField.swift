@@ -1,7 +1,7 @@
-import Foundation
 import Effector
+import Foundation
 
-final class EffectorFormField<Value: Equatable, Values: Equatable> {
+public final class EffectorFormField<Value: Equatable, Values: Equatable> {
     // MARK: Lifecycle
 
     init(_ config: EffectorFormFieldConfig<Value, Values>) {
@@ -73,7 +73,7 @@ final class EffectorFormField<Value: Equatable, Values: Equatable> {
     var config: EffectorFormFieldConfig<Value, Values>
 }
 
-extension EffectorFormField {
+public extension EffectorFormField {
     struct FieldData<Value: Equatable> {
         var value: Value
         var errors: [ValidationError<Value>]
@@ -85,7 +85,7 @@ extension EffectorFormField {
     }
 }
 
-struct EffectorFormFieldConfig<Value, Values> {
+public struct EffectorFormFieldConfig<Value, Values> {
     // MARK: Lifecycle
 
     internal init(
