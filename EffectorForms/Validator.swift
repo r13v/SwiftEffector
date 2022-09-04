@@ -1,4 +1,4 @@
-typealias Validator<Value, Values> = (Value, Values) -> String?
+public typealias Validator<Value, Values> = (Value, Values) -> String?
 
 public struct ValidationRule<Value, Values> {
     var name: String

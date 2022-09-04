@@ -1,8 +1,8 @@
-import Foundation
 import Effector
+import Foundation
 import SwiftUI
 
-final class EffectorForm<Values: Codable> {
+public final class EffectorForm<Values: Codable> {
     // MARK: Lifecycle
 
     init(validateOn: Set<ValidationEvent> = Set([.submit]), filter: Store<Bool> = Store(true)) {
@@ -163,7 +163,7 @@ final class EffectorForm<Values: Codable> {
     }
 }
 
-extension EffectorForm {
+public extension EffectorForm {
     struct Meta: Equatable {
         var isValid: Bool
         var isDirty: Bool
@@ -171,7 +171,7 @@ extension EffectorForm {
     }
 }
 
-struct EffectorFormConfig<Values> {
+public struct EffectorFormConfig<Values> {
     var fields: [EffectorFormFieldConfig<Any, Values>] = []
     var validateOn: Set<ValidationEvent> = Set([.submit])
     var filter: Store<Bool> = Store(true)
