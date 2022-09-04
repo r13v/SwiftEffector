@@ -5,7 +5,7 @@ import SwiftUI
 public final class EffectorForm<Values: Codable> {
     // MARK: Lifecycle
 
-    init(validateOn: Set<ValidationEvent> = Set([.submit]), filter: Store<Bool> = Store(true)) {
+    public init(validateOn: Set<ValidationEvent> = Set([.submit]), filter: Store<Bool> = Store(true)) {
         self.validateOn = validateOn
         self.filter = filter
     }
@@ -38,7 +38,11 @@ public final class EffectorForm<Values: Codable> {
         _ initialValue: @autoclosure @escaping () -> Value,
         _ rules: [ValidationRule<Value, Values>] = []
     ) -> EffectorFormField<Value, Values> {
-        return register(.init(name: name, keyPath: keyPath, initialValue: initialValue(), rules: rules))
+        let field = EffectorFormField(
+            .init(name: name, keyPath: keyPath, initialValue: initialValue(), rules: rules)
+        )
+
+        return register(field)
     }
 
     @discardableResult
@@ -48,7 +52,7 @@ public final class EffectorForm<Values: Codable> {
         _ initialValue: @autoclosure @escaping () -> Value,
         _ rule: Validator<Value, Values>?
     ) -> EffectorFormField<Value, Values> {
-        return register(
+        let field = EffectorFormField(
             .init(
                 name: name,
                 keyPath: keyPath,
@@ -56,12 +60,18 @@ public final class EffectorForm<Values: Codable> {
                 rules: rule != nil ? [.init(name: name, validator: rule!)] : []
             )
         )
+
+        return register(field)
     }
 
     @discardableResult
-    public func register<Value: Equatable>(_ fieldConfig: EffectorFormFieldConfig<Value, Values>) -> EffectorFormField<Value, Values> {
-        let field = EffectorFormField(fieldConfig)
+    public func register<Value: Equatable>(_ config: EffectorFormFieldConfig<Value, Values>) -> EffectorFormField<Value, Values> {
+        let field = EffectorFormField(config)
+        return register(field)
+    }
 
+    @discardableResult
+    public func register<Value: Equatable>(_ field: EffectorFormField<Value, Values>) -> EffectorFormField<Value, Values> {
         isValidFlags.append(field.isValid)
         isDirtyFlags.append(field.isDirty)
         isTouchedFlags.append(field.isTouched)

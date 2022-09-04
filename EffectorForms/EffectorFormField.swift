@@ -4,7 +4,7 @@ import Foundation
 public final class EffectorFormField<Value: Equatable, Values: Equatable> {
     // MARK: Lifecycle
 
-    init(_ config: EffectorFormFieldConfig<Value, Values>) {
+    public init(_ config: EffectorFormFieldConfig<Value, Values>) {
         self.config = config
         self.name = config.name
         self.filter = config.filter
@@ -88,7 +88,7 @@ public extension EffectorFormField {
 public struct EffectorFormFieldConfig<Value, Values> {
     // MARK: Lifecycle
 
-    internal init(
+    public init(
         name: String,
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
