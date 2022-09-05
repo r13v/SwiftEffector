@@ -78,13 +78,13 @@ public final class EffectorFormField<Value: Equatable, Values: Equatable> {
 
 public extension EffectorFormField {
     struct FieldData<Value: Equatable> {
-        var value: Value
-        var errors: [ValidationError<Value>]
-        var firstError: ValidationError<Value>?
+        public var value: Value
+        public var errors: [ValidationError<Value>]
+        public var firstError: ValidationError<Value>?
 
-        var isValid: Bool
-        var isDirty: Bool
-        var isTouched: Bool
+        public var isValid: Bool
+        public var isDirty: Bool
+        public var isTouched: Bool
     }
 }
 
@@ -125,10 +125,10 @@ public struct FormFieldError {
         self.errorText = errorText
     }
 
-    // MARK: Internal
+    // MARK: Public
 
-    var rule: String
-    var errorText: String?
+    public var rule: String
+    public var errorText: String?
 }
 
 func bindChangeEvent<Values, T>(

@@ -175,14 +175,14 @@ public final class EffectorForm<Values: Codable> {
 
 public extension EffectorForm {
     struct Meta: Equatable {
-        var isValid: Bool
-        var isDirty: Bool
-        var isTouched: Bool
+        public var isValid: Bool
+        public var isDirty: Bool
+        public var isTouched: Bool
     }
 }
 
 public struct EffectorFormConfig<Values> {
-    var fields: [EffectorFormFieldConfig<Any, Values>] = []
-    var validateOn: Set<ValidationEvent> = Set([.submit])
-    var filter: Store<Bool> = Store(true)
+    public var fields: [EffectorFormFieldConfig<Any, Values>] = []
+    public var validateOn: Set<ValidationEvent> = Set([.submit])
+    public var filter: Store<Bool> = Store(true)
 }

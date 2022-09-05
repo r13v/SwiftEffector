@@ -8,10 +8,10 @@ public struct ValidationRule<Value, Values> {
         self.validator = validator
     }
 
-    // MARK: Internal
+    // MARK: Public
 
-    var name: String
-    var validator: Validator<Value, Values>
+    public var name: String
+    public var validator: Validator<Value, Values>
 }
 
 public enum ValidationEvent {
@@ -19,7 +19,7 @@ public enum ValidationEvent {
 }
 
 public struct ValidationError<Value: Equatable>: Equatable {
-    var rule: String
-    var value: Value
-    var errorText: String?
+    public var rule: String
+    public var value: Value
+    public var errorText: String?
 }
