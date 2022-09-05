@@ -5,8 +5,9 @@ import SwiftUI
 public struct UseStore<T>: DynamicProperty {
     // MARK: Lifecycle
 
-    public init(_ store: Store<T>) {
+    public init(_ store: Store<T>, _ change: Event<T>?) {
         self.store = store
+        self.change = change
     }
 
     // MARK: Public
@@ -16,9 +17,15 @@ public struct UseStore<T>: DynamicProperty {
             store.currentState
         }
         nonmutating set {
-            store.setState(newValue)
+            if let change = change {
+                change(newValue)
+            }
         }
     }
+
+    // MARK: Internal
+
+    var change: Event<T>?
 
     // MARK: Private
 
