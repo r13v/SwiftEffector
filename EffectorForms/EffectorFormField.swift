@@ -1,5 +1,6 @@
 import Effector
 import Foundation
+import SwiftUI
 
 public final class EffectorFormField<Value: Equatable, Values: Equatable> {
     // MARK: Lifecycle
@@ -68,6 +69,8 @@ public final class EffectorFormField<Value: Equatable, Values: Equatable> {
     public var resetValue = Event<Void>()
     public var filter: Store<Bool>
 
+    public private(set) lazy var binding: Binding<Value> = Binding { self.value.currentState } set: { self.change($0) }
+
     // MARK: Internal
 
     var config: EffectorFormFieldConfig<Value, Values>
@@ -115,6 +118,15 @@ public struct EffectorFormFieldConfig<Value, Values> {
 }
 
 public struct FormFieldError {
+    // MARK: Lifecycle
+
+    public init(rule: String, errorText: String?) {
+        self.rule = rule
+        self.errorText = errorText
+    }
+
+    // MARK: Internal
+
     var rule: String
     var errorText: String?
 }
