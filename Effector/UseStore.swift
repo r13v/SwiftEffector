@@ -5,7 +5,7 @@ import SwiftUI
 public struct UseStore<T>: DynamicProperty {
     // MARK: Lifecycle
 
-    public init(_ store: Store<T>, _ change: Event<T>?) {
+    public init(_ store: Store<T>, _ change: Event<T>? = nil) {
         self.store = store
         self.change = change
     }
