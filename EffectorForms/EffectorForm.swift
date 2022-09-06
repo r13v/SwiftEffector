@@ -171,6 +171,11 @@ public final class EffectorForm<Values: FormValues> {
             return
         }
 
+        #if DEBUG
+        print("***\nForm '\(type(of: Values.self))' built.")
+        dump(registeredFieldsNames)
+        #endif
+
         isValid = allSatisfy(isValidFlags) { $0 }
         isDirty = contains(isDirtyFlags) { $0 }
         isTouched = contains(isTouchedFlags) { $0 }

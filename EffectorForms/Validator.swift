@@ -30,7 +30,7 @@ let emailRegex = NSPredicate(format: "SELF MATCHES %@", "[A-Z0-9a-z._%+-]+@[A-Za
 // swiftlint:disable:next line_length
 let urlRegex = NSPredicate(format: "SELF MATCHES %@", "((?:http|https)://)?(?:www\\.)?[\\w\\d\\-_]+\\.\\w{2,3}(\\.\\w{2})?(/(?<=/)(?:[\\w\\d\\-./_]+)?)?")
 
-extension ValidationRule where Value == String {
+public extension ValidationRule where Value == String {
     static func required(_ errorText: String? = nil) -> ValidationRule {
         .init(name: "required") { value, _ in
             value.trimmingCharacters(in: .whitespacesAndNewlines).count > 0 ? nil : errorText ?? "Required"
@@ -94,7 +94,7 @@ extension ValidationRule where Value == String {
     }
 }
 
-extension ValidationRule where Value == Int {
+public extension ValidationRule where Value == Int {
     static func min(_ min: Int, _ errorText: String? = nil) -> ValidationRule {
         .init(name: "min") { value, _ in
             value >= min ? nil : errorText ?? "Must be greater than or equal to \(min)"
