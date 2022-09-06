@@ -60,10 +60,21 @@ func requiredString<Values>(_ value: String, _: Values) -> String? {
 
 // swiftlint:disable:next type_body_length
 final class FormTests: XCTestCase {
+    // swiftlint:disable:next function_body_length
     func testSignInForm() async throws {
         let form = EffectorForm<SignInForm>()
-        let email = form.register("email", \.email, "", validEmail)
-        let password = form.register("password", \.password, "", [.init(name: "minLength", validator: minLength(4))])
+        let email = form.register(
+            name: "email",
+            keyPath: \.email,
+            initialValue: "",
+            validator: validEmail
+        )
+        let password = form.register(
+            name: "password",
+            keyPath: \.password,
+            initialValue: "",
+            rules: [.init(name: "minLength", validator: minLength(4))]
+        )
 
         var formSubmitted = false
 
@@ -123,7 +134,7 @@ final class FormTests: XCTestCase {
         let form = EffectorForm<SignUpForm>(validateOn: Set([.submit]))
 
         let email = form.register(
-            .init(
+            config: .init(
                 name: "email",
                 keyPath: \.email,
                 initialValue: "",
@@ -132,13 +143,18 @@ final class FormTests: XCTestCase {
             )
         )
 
-        let password = form.register("password", \.password, "", [
-            .init(name: "required", validator: requiredString),
-            .init(name: "minLength", validator: minLength(3))
-        ])
+        let password = form.register(
+            name: "password",
+            keyPath: \.password,
+            initialValue: "",
+            rules: [
+                .init(name: "required", validator: requiredString),
+                .init(name: "minLength", validator: minLength(3))
+            ]
+        )
 
         let confirm = form.register(
-            .init(
+            config: .init(
                 name: "confirm",
                 keyPath: \.confirm,
                 initialValue: "",
@@ -190,14 +206,14 @@ final class FormTests: XCTestCase {
 
     func testRegisterFieldWithValidationRules() async throws {
         let form = EffectorForm<SignInForm>()
-        form.register("email", \.email, "", .email())
-        form.register("password", \.email, "", .min(6))
+        form.register(name: "email", keyPath: \.email, initialValue: "", rule: .email())
+        form.register(name: "password", keyPath: \.email, initialValue: "", rule: .min(6))
     }
 
     func testSetForm() async throws {
         let form = EffectorForm<SignInForm>()
-        form.register("email", \.email, "", validEmail)
-        form.register("password", \.password, "", requiredString)
+        form.register(name: "email", keyPath: \.email, initialValue: "", validator: validEmail)
+        form.register(name: "password", keyPath: \.password, initialValue: "", validator: requiredString)
 
         let filled = SignInForm(email: "test@example.com", password: "123")
 
@@ -225,8 +241,13 @@ final class FormTests: XCTestCase {
 
         let form = EffectorForm<SignInForm>(filter: serverError.map { !$0 })
 
-        let email = form.register("email", \.email, "", validEmail)
-        let password = form.register("password", \.password, "", requiredString)
+        let email = form.register(name: "email", keyPath: \.email, initialValue: "", validator: validEmail)
+        let password = form.register(
+            name: "password",
+            keyPath: \.password,
+            initialValue: "",
+            validator: requiredString
+        )
 
         serverError.reset(form.values.updates)
 
@@ -267,8 +288,13 @@ final class FormTests: XCTestCase {
 
     func testReset() async throws {
         let form = EffectorForm<SignInForm>()
-        let email = form.register("email", \.email, "", requiredString)
-        let password = form.register("password", \.password, "", requiredString)
+        let email = form.register(name: "email", keyPath: \.email, initialValue: "", validator: requiredString)
+        let password = form.register(
+            name: "password",
+            keyPath: \.password,
+            initialValue: "",
+            validator: requiredString
+        )
 
         email.change("123")
         password.change("123")
@@ -303,8 +329,13 @@ final class FormTests: XCTestCase {
 
     func testResetErrors() async throws {
         let form = EffectorForm<SignInForm>()
-        let email = form.register("email", \.email, "", requiredString)
-        let password = form.register("password", \.password, "", requiredString)
+        let email = form.register(name: "email", keyPath: \.email, initialValue: "", validator: requiredString)
+        let password = form.register(
+            name: "password",
+            keyPath: \.password,
+            initialValue: "",
+            validator: requiredString
+        )
 
         form.submit()
         XCTAssertFalse(email.isValid.getState())
@@ -330,8 +361,13 @@ final class FormTests: XCTestCase {
     // swiftlint:disable:next function_body_length
     func testIsDirtyAndIsTouched() async throws {
         let form = EffectorForm<SignInForm>()
-        let email = form.register("email", \.email, "", requiredString)
-        let password = form.register("password", \.password, "", requiredString)
+        let email = form.register(name: "email", keyPath: \.email, initialValue: "", validator: requiredString)
+        let password = form.register(
+            name: "password",
+            keyPath: \.password,
+            initialValue: "",
+            validator: requiredString
+        )
 
         XCTAssertFalse(email.isDirty.getState())
         XCTAssertFalse(password.isDirty.getState())
@@ -441,7 +477,7 @@ final class FormTests: XCTestCase {
         let form = EffectorForm<SignInForm>()
 
         let email = form.register(
-            .init(
+            config: .init(
                 name: "email",
                 keyPath: \.email,
                 initialValue: "",
@@ -450,7 +486,12 @@ final class FormTests: XCTestCase {
             )
         )
 
-        let password = form.register("password", \.password, "", requiredString)
+        let password = form.register(
+            name: "password",
+            keyPath: \.password,
+            initialValue: "",
+            validator: requiredString
+        )
 
         email.change("123")
         password.change("123")

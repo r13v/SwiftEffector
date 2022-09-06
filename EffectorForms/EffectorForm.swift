@@ -44,24 +44,24 @@ public final class EffectorForm<Values: FormValues> {
 
     @discardableResult
     public func register<Value: Equatable>(
-        _ name: String,
-        _ keyPath: KeyPath<Values, Value>,
-        _ initialValue: @autoclosure @escaping () -> Value,
-        _ rules: [ValidationRule<Value, Values>] = []
+        name: String,
+        keyPath: KeyPath<Values, Value>,
+        initialValue: @autoclosure @escaping () -> Value,
+        rules: [ValidationRule<Value, Values>] = []
     ) -> EffectorFormField<Value, Values> {
         let field = EffectorFormField(
             .init(name: name, keyPath: keyPath, initialValue: initialValue(), rules: rules)
         )
 
-        return register(field)
+        return register(field: field)
     }
 
     @discardableResult
     public func register<Value: Equatable>(
-        _ name: String,
-        _ keyPath: KeyPath<Values, Value>,
-        _ initialValue: @autoclosure @escaping () -> Value,
-        _ validator: Validator<Value, Values>?
+        name: String,
+        keyPath: KeyPath<Values, Value>,
+        initialValue: @autoclosure @escaping () -> Value,
+        validator: Validator<Value, Values>?
     ) -> EffectorFormField<Value, Values> {
         let field = EffectorFormField(
             .init(
@@ -72,15 +72,15 @@ public final class EffectorForm<Values: FormValues> {
             )
         )
 
-        return register(field)
+        return register(field: field)
     }
 
     @discardableResult
     public func register<Value: Equatable>(
-        _ name: String,
-        _ keyPath: KeyPath<Values, Value>,
-        _ initialValue: @autoclosure @escaping () -> Value,
-        _ rule: ValidationRule<Value, Values>?
+        name: String,
+        keyPath: KeyPath<Values, Value>,
+        initialValue: @autoclosure @escaping () -> Value,
+        rule: ValidationRule<Value, Values>?
     ) -> EffectorFormField<Value, Values> {
         let field = EffectorFormField(
             .init(
@@ -91,20 +91,20 @@ public final class EffectorForm<Values: FormValues> {
             )
         )
 
-        return register(field)
+        return register(field: field)
     }
 
     @discardableResult
     public func register<Value: Equatable>(
-        _ config: EffectorFormFieldConfig<Value, Values>
+        config: EffectorFormFieldConfig<Value, Values>
     ) -> EffectorFormField<Value, Values> {
         let field = EffectorFormField(config)
-        return register(field)
+        return register(field: field)
     }
 
     @discardableResult
     public func register<Value: Equatable>(
-        _ field: EffectorFormField<Value, Values>
+        field: EffectorFormField<Value, Values>
     ) -> EffectorFormField<Value, Values> {
         if !allFieldsNames.contains(field.name) {
             preconditionFailure("Unknown field '\(field.name)'")
