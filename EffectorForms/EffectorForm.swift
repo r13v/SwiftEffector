@@ -2,12 +2,23 @@ import Effector
 import Foundation
 import SwiftUI
 
-public final class EffectorForm<Values: Codable> {
+public protocol Defaultable {
+    static var `default`: Self { get }
+}
+
+public typealias FormValues = Codable & Equatable & Defaultable
+
+public final class EffectorForm<Values: FormValues> {
     // MARK: Lifecycle
 
-    public init(validateOn: Set<ValidationEvent> = Set([.submit]), filter: Store<Bool> = Store(true)) {
+    public init(
+        validateOn: Set<ValidationEvent> = Set([.submit]),
+        filter: Store<Bool> = Store(true)
+    ) {
         self.validateOn = validateOn
         self.filter = filter
+
+        self.allFieldsNames = Set(Mirror(reflecting: Values.default).children.map { $0.label! })
     }
 
     // MARK: Public
@@ -50,14 +61,14 @@ public final class EffectorForm<Values: Codable> {
         _ name: String,
         _ keyPath: KeyPath<Values, Value>,
         _ initialValue: @autoclosure @escaping () -> Value,
-        _ rule: Validator<Value, Values>?
+        _ validator: Validator<Value, Values>?
     ) -> EffectorFormField<Value, Values> {
         let field = EffectorFormField(
             .init(
                 name: name,
                 keyPath: keyPath,
                 initialValue: initialValue(),
-                rules: rule != nil ? [.init(name: name, validator: rule!)] : []
+                rules: validator != nil ? [.init(name: name, validator: validator!)] : []
             )
         )
 
@@ -65,13 +76,44 @@ public final class EffectorForm<Values: Codable> {
     }
 
     @discardableResult
-    public func register<Value: Equatable>(_ config: EffectorFormFieldConfig<Value, Values>) -> EffectorFormField<Value, Values> {
+    public func register<Value: Equatable>(
+        _ name: String,
+        _ keyPath: KeyPath<Values, Value>,
+        _ initialValue: @autoclosure @escaping () -> Value,
+        _ rule: ValidationRule<Value, Values>?
+    ) -> EffectorFormField<Value, Values> {
+        let field = EffectorFormField(
+            .init(
+                name: name,
+                keyPath: keyPath,
+                initialValue: initialValue(),
+                rules: rule != nil ? [rule!] : []
+            )
+        )
+
+        return register(field)
+    }
+
+    @discardableResult
+    public func register<Value: Equatable>(
+        _ config: EffectorFormFieldConfig<Value, Values>
+    ) -> EffectorFormField<Value, Values> {
         let field = EffectorFormField(config)
         return register(field)
     }
 
     @discardableResult
-    public func register<Value: Equatable>(_ field: EffectorFormField<Value, Values>) -> EffectorFormField<Value, Values> {
+    public func register<Value: Equatable>(
+        _ field: EffectorFormField<Value, Values>
+    ) -> EffectorFormField<Value, Values> {
+        if !allFieldsNames.contains(field.name) {
+            preconditionFailure("Unknown field '\(field.name)'")
+        }
+
+        if registeredFieldsNames.contains(field.name) {
+            preconditionFailure("Field '\(field.name)' already registered")
+        }
+
         isValidFlags.append(field.isValid)
         isDirtyFlags.append(field.isDirty)
         isTouchedFlags.append(field.isTouched)
@@ -98,12 +140,36 @@ public final class EffectorForm<Values: Codable> {
             )
         }
 
+        registeredFieldsNames.insert(field.name)
+
+        defer {
+            buildFormIfReady()
+        }
+
         return field
     }
 
-    @discardableResult
-    public func build() -> Self {
-        checkRegisteredFields()
+    // MARK: Internal
+
+    var validateOn: Set<ValidationEvent>
+    var filter: Store<Bool>
+
+    // MARK: Private
+
+    private var validationBindings = [(values: Store<Values>) -> Void]()
+
+    private var isValidFlags = [Store<Bool>]()
+    private var isDirtyFlags = [Store<Bool>]()
+    private var isTouchedFlags = [Store<Bool>]()
+    private var valuesStores = [Store<Any>]()
+
+    private var allFieldsNames: Set<String>
+    private var registeredFieldsNames = Set<String>()
+
+    private func buildFormIfReady() {
+        guard registeredFieldsNames == allFieldsNames else {
+            return
+        }
 
         isValid = allSatisfy(isValidFlags) { $0 }
         isDirty = contains(isDirtyFlags) { $0 }
@@ -141,35 +207,6 @@ public final class EffectorForm<Values: Codable> {
             filter: isOk,
             target: validated
         )
-
-        return self
-    }
-
-    // MARK: Internal
-
-    var validateOn: Set<ValidationEvent>
-    var filter: Store<Bool>
-
-    // MARK: Private
-
-    private var registeredFields = Set<String>()
-    private var validationBindings = [(values: Store<Values>) -> Void]()
-
-    private var isValidFlags = [Store<Bool>]()
-    private var isDirtyFlags = [Store<Bool>]()
-    private var isTouchedFlags = [Store<Bool>]()
-    private var valuesStores = [Store<Any>]()
-
-    private func checkRegisteredFields() {
-        let formFieldsNames = Set(
-            Mirror(reflecting: Values.self)
-                .children
-                .map { $0.label! }
-        )
-
-        if formFieldsNames != registeredFields {
-            preconditionFailure("Registered fields missmatch.")
-        }
     }
 }
 

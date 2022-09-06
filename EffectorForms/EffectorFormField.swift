@@ -29,8 +29,14 @@ public final class EffectorFormField<Value: Equatable, Values: Equatable> {
         self.isDirty = isDirty
         self.isTouched = isTouched
 
-        self.field = combine(value, errors, firstError, isValid, isDirty, isTouched) {
-            value, errors, firstError, isValid, isDirty, isTouched in
+        self.field = combine(
+            value,
+            errors,
+            firstError,
+            isValid,
+            isDirty,
+            isTouched
+        ) { value, errors, firstError, isValid, isDirty, isTouched in
             FieldData(
                 value: value,
                 errors: errors,
@@ -150,20 +156,11 @@ func bindChangeEvent<Values, T>(
 
     field.value
         .on(field.changed) { _, value in value }
-        .on(setForm) { state, values in
-            let mirror = Mirror(reflecting: values)
-
-            for child in mirror.children {
-                if child.label == field.name {
-                    return child.value as! T
-                }
-            }
-
-            return state
-        }
+        .on(setForm) { _, values in values[keyPath: field.config.keyPath] }
         .reset([field.reset, field.resetValue, resetValues, resetForm])
 }
 
+// swiftlint:disable:next function_parameter_count
 func bindValidation<T, Values>(
     values: Store<Values>,
     validateFormEvent: Event<Void>,
@@ -228,8 +225,7 @@ func bindValidation<T, Values>(
 func combineValidationRules<Value, Values>(
     _ rules: [ValidationRule<Value, Values>]
 ) -> (Value, Values) -> [ValidationError<Value>] {
-    let validator: (_ value: Value, _ values: Values) -> [ValidationError<Value>] =
-        { value, values in
+    let validator: (_ value: Value, _ values: Values) -> [ValidationError<Value>] = { value, values in
             var errors = [ValidationError<Value>]()
 
             for rule in rules {

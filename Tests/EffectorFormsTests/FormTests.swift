@@ -1,14 +1,18 @@
-
+// swiftlint:disable file_length
 import Effector
 @testable import EffectorForms
 import XCTest
 
-struct SignInForm: Codable, Equatable {
+struct SignInForm: FormValues {
+    static var `default` = SignInForm(email: "", password: "")
+
     var email: String
     var password: String
 }
 
-struct SignUpForm: Codable, Equatable {
+struct SignUpForm: FormValues {
+    static var `default` = SignUpForm(email: "", password: "", confirm: "")
+
     var email: String
     var password: String
     var confirm: String
@@ -54,13 +58,12 @@ func requiredString<Values>(_ value: String, _: Values) -> String? {
     value.trimmingCharacters(in: .whitespacesAndNewlines).count > 0 ? nil : "Required"
 }
 
+// swiftlint:disable:next type_body_length
 final class FormTests: XCTestCase {
     func testSignInForm() async throws {
         let form = EffectorForm<SignInForm>()
         let email = form.register("email", \.email, "", validEmail)
         let password = form.register("password", \.password, "", [.init(name: "minLength", validator: minLength(4))])
-
-        form.build()
 
         var formSubmitted = false
 
@@ -79,8 +82,14 @@ final class FormTests: XCTestCase {
 
         XCTAssertFalse(form.isValid.getState())
         XCTAssertFalse(formSubmitted)
-        XCTAssertEqual(email.firstError.getState()!, ValidationError(rule: "email", value: "invalid", errorText: "invalid email"))
-        XCTAssertEqual(password.firstError.getState()!, ValidationError(rule: "minLength", value: "", errorText: "Minimum 4 symbols"))
+        XCTAssertEqual(
+            email.firstError.getState()!,
+            ValidationError(rule: "email", value: "invalid", errorText: "invalid email")
+        )
+        XCTAssertEqual(
+            password.firstError.getState()!,
+            ValidationError(rule: "minLength", value: "", errorText: "Minimum 4 symbols")
+        )
 
         email.change("test")
 
@@ -90,7 +99,10 @@ final class FormTests: XCTestCase {
         form.submit()
 
         XCTAssertFalse(form.isValid.getState())
-        XCTAssertEqual(email.firstError.getState()!, ValidationError(rule: "email", value: "test", errorText: "invalid email"))
+        XCTAssertEqual(
+            email.firstError.getState()!,
+            ValidationError(rule: "email", value: "test", errorText: "invalid email")
+        )
 
         email.change("test@gmail.com")
         password.change("1234")
@@ -106,6 +118,7 @@ final class FormTests: XCTestCase {
         XCTAssert(formSubmitted)
     }
 
+    // swiftlint:disable:next function_body_length
     func testSignUpForm() async throws {
         let form = EffectorForm<SignUpForm>(validateOn: Set([.submit]))
 
@@ -130,13 +143,16 @@ final class FormTests: XCTestCase {
                 keyPath: \.confirm,
                 initialValue: "",
                 rules: [
-                    .init(name: "equal", validator: { value, values in value == values.password ? nil : "Should be equal" })
+                    .init(
+                        name: "equal",
+                        validator: { value, values in
+                            value == values.password ? nil : "Should be equal"
+                        }
+                    )
                 ],
                 validateOn: Set([.change])
             )
         )
-
-        form.build()
 
         var formSubmitted = false
 
@@ -172,11 +188,16 @@ final class FormTests: XCTestCase {
         XCTAssert(formSubmitted)
     }
 
+    func testRegisterFieldWithValidationRules() async throws {
+        let form = EffectorForm<SignInForm>()
+        form.register("email", \.email, "", .email())
+        form.register("password", \.email, "", .min(6))
+    }
+
     func testSetForm() async throws {
         let form = EffectorForm<SignInForm>()
         form.register("email", \.email, "", validEmail)
         form.register("password", \.password, "", requiredString)
-        form.build()
 
         let filled = SignInForm(email: "test@example.com", password: "123")
 
@@ -206,7 +227,6 @@ final class FormTests: XCTestCase {
 
         let email = form.register("email", \.email, "", validEmail)
         let password = form.register("password", \.password, "", requiredString)
-        form.build()
 
         serverError.reset(form.values.updates)
 
@@ -250,8 +270,6 @@ final class FormTests: XCTestCase {
         let email = form.register("email", \.email, "", requiredString)
         let password = form.register("password", \.password, "", requiredString)
 
-        form.build()
-
         email.change("123")
         password.change("123")
 
@@ -288,8 +306,6 @@ final class FormTests: XCTestCase {
         let email = form.register("email", \.email, "", requiredString)
         let password = form.register("password", \.password, "", requiredString)
 
-        form.build()
-
         form.submit()
         XCTAssertFalse(email.isValid.getState())
         XCTAssertFalse(password.isValid.getState())
@@ -311,12 +327,11 @@ final class FormTests: XCTestCase {
         XCTAssert(password.isValid.getState())
     }
 
+    // swiftlint:disable:next function_body_length
     func testIsDirtyAndIsTouched() async throws {
         let form = EffectorForm<SignInForm>()
         let email = form.register("email", \.email, "", requiredString)
         let password = form.register("password", \.password, "", requiredString)
-
-        form.build()
 
         XCTAssertFalse(email.isDirty.getState())
         XCTAssertFalse(password.isDirty.getState())
@@ -437,8 +452,6 @@ final class FormTests: XCTestCase {
 
         let password = form.register("password", \.password, "", requiredString)
 
-        form.build()
-
         email.change("123")
         password.change("123")
         XCTAssertEqual(email.value.getState(), "123")
@@ -464,6 +477,7 @@ final class FormTests: XCTestCase {
     }
 }
 
+// swiftlint:disable:next type_body_length
 final class FieldTests: XCTestCase {
     func createField(
         _ config: EffectorFormFieldConfig<String, SignInForm>
@@ -577,6 +591,7 @@ final class FieldTests: XCTestCase {
         XCTAssertNil(field.firstError.getState())
     }
 
+    // swiftlint:disable:next function_body_length
     func testBindValidationOnBlur() async throws {
         let field = EffectorFormField(
             .init(

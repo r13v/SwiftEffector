@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 func sampleBase<Payload, State, Mapped>(
     name: String? = nil,
     trigger: Event<Payload>,
@@ -388,7 +389,7 @@ public func sample<Payload, Mapped, Done, Fail>(
 // Link without source and map
 
 @discardableResult
-func sample<Payload>(
+public func sample<Payload>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil
@@ -397,7 +398,7 @@ func sample<Payload>(
 }
 
 @discardableResult
-func sample<Payload>(
+public func sample<Payload>(
     name: String? = nil,
     trigger: Event<Payload>,
     filter: Store<Bool>

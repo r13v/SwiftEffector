@@ -76,7 +76,13 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
                 return effectParams.params
             }
 
-            let runnerNode = createNode(name: "\(name):runner:\(traceID)", kind: .regular, priority: .effect, seq: [runner])
+            let runnerNode = createNode(
+                name: "\(name):runner:\(traceID)",
+                kind: .regular,
+                priority: .effect,
+                seq: [runner]
+            )
+
             let enqueuerNode = Node(
                 name: "\(name):enqueuer:\(traceID)",
                 kind: .regular,

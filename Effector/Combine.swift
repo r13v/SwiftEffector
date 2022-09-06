@@ -78,6 +78,7 @@ public func combine<Combined, A, B, C, D>(
     return combined
 }
 
+// swiftlint:disable:next function_parameter_count
 public func combine<Combined, A, B, C, D, E>(
     _ a: Store<A>,
     _ b: Store<B>,
@@ -106,6 +107,7 @@ public func combine<Combined, A, B, C, D, E>(
     return combined
 }
 
+// swiftlint:disable:next function_parameter_count
 public func combine<Combined, A, B, C, D, E, F>(
     _ a: Store<A>,
     _ b: Store<B>,
@@ -160,8 +162,11 @@ public func combine<Combined: Codable>(_ stores: [Store<Any>]) -> Store<Combined
             dict[store.name] = store.getState()
         }
 
-        let jsonData = try! JSONSerialization.data(withJSONObject: dict, options: [])
-        let result = try! jsonDecoder.decode(Combined.self, from: jsonData)
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: []),
+              let result = try? jsonDecoder.decode(Combined.self, from: jsonData)
+        else {
+            preconditionFailure("Can't combine to \(type(of: Combined.self))")
+        }
 
         return result
     }
