@@ -126,7 +126,7 @@ public struct EffectorFormFieldConfig<Value, Values> {
 public struct FormFieldError {
     // MARK: Lifecycle
 
-    public init(rule: String, errorText: String?) {
+    public init(rule: String, errorText: String) {
         self.rule = rule
         self.errorText = errorText
     }
@@ -134,7 +134,7 @@ public struct FormFieldError {
     // MARK: Public
 
     public var rule: String
-    public var errorText: String?
+    public var errorText: String
 }
 
 func bindChangeEvent<Values, T>(

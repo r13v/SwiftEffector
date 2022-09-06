@@ -45,7 +45,7 @@ struct ContentView: View {
 
             Button("dec", action: dec.run)
             Button("inc", action: inc.run)
-            Button("inc 10 async", action: { Task { try await incAsync.run() }})
+            Button("inc 10 async", action: { Task { try await incAsync() }})
             Button("set 100") { value = 100 }
         }
     }

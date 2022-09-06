@@ -18,7 +18,8 @@ public final class EffectorForm<Values: FormValues> {
         self.validateOn = validateOn
         self.filter = filter
 
-        self.allFieldsNames = Set(Mirror(reflecting: Values.default).children.map { $0.label! })
+        let keys = Mirror(reflecting: Values.default).children.map { $0.label! }
+        self.allFieldsNames = Set(keys)
     }
 
     // MARK: Public
@@ -43,27 +44,25 @@ public final class EffectorForm<Values: FormValues> {
     public var validated = Event<Values>()
 
     @discardableResult
-    public func register<Value: Equatable>(
+    public func field<Value: Equatable>(
         name: String,
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
         rules: [ValidationRule<Value, Values>] = []
     ) -> EffectorFormField<Value, Values> {
-        let field = EffectorFormField(
+        EffectorFormField(
             .init(name: name, keyPath: keyPath, initialValue: initialValue(), rules: rules)
         )
-
-        return register(field: field)
     }
 
     @discardableResult
-    public func register<Value: Equatable>(
+    public func field<Value: Equatable>(
         name: String,
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
         validator: Validator<Value, Values>?
     ) -> EffectorFormField<Value, Values> {
-        let field = EffectorFormField(
+        EffectorFormField(
             .init(
                 name: name,
                 keyPath: keyPath,
@@ -71,18 +70,16 @@ public final class EffectorForm<Values: FormValues> {
                 rules: validator != nil ? [.init(name: name, validator: validator!)] : []
             )
         )
-
-        return register(field: field)
     }
 
     @discardableResult
-    public func register<Value: Equatable>(
+    public func field<Value: Equatable>(
         name: String,
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
         rule: ValidationRule<Value, Values>?
     ) -> EffectorFormField<Value, Values> {
-        let field = EffectorFormField(
+        EffectorFormField(
             .init(
                 name: name,
                 keyPath: keyPath,
@@ -90,16 +87,13 @@ public final class EffectorForm<Values: FormValues> {
                 rules: rule != nil ? [rule!] : []
             )
         )
-
-        return register(field: field)
     }
 
     @discardableResult
-    public func register<Value: Equatable>(
+    public func field<Value: Equatable>(
         config: EffectorFormFieldConfig<Value, Values>
     ) -> EffectorFormField<Value, Values> {
-        let field = EffectorFormField(config)
-        return register(field: field)
+        EffectorFormField(config)
     }
 
     @discardableResult
@@ -113,6 +107,8 @@ public final class EffectorForm<Values: FormValues> {
         if registeredFieldsNames.contains(field.name) {
             preconditionFailure("Field '\(field.name)' already registered")
         }
+
+        registeredFieldsNames.insert(field.name)
 
         isValidFlags.append(field.isValid)
         isDirtyFlags.append(field.isDirty)
@@ -139,8 +135,6 @@ public final class EffectorForm<Values: FormValues> {
                 formValidationEvents: self.validateOn
             )
         }
-
-        registeredFieldsNames.insert(field.name)
 
         defer {
             buildFormIfReady()
@@ -170,11 +164,6 @@ public final class EffectorForm<Values: FormValues> {
         guard registeredFieldsNames == allFieldsNames else {
             return
         }
-
-        #if DEBUG
-        print("***\nForm '\(type(of: Values.self))' built.")
-        dump(registeredFieldsNames)
-        #endif
 
         isValid = allSatisfy(isValidFlags) { $0 }
         isDirty = contains(isDirtyFlags) { $0 }

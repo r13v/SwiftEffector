@@ -7,7 +7,7 @@ public enum ValidationEvent {
 public struct ValidationError<Value: Equatable>: Equatable {
     public var rule: String
     public var value: Value
-    public var errorText: String?
+    public var errorText: String
 }
 
 public typealias Validator<Value, Values> = (Value, Values) -> String?
