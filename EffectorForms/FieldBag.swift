@@ -1,7 +1,15 @@
 import Combine
 import Foundation
 
-public final class FieldBag<T: Equatable, Root: FormValues>: ObservableObject {
+public protocol FieldBagProtocol: ObservableObject {
+    associatedtype Value
+
+    var error: String? { get }
+    var value: Value { get set }
+    var hasFocus: Bool { get set }
+}
+
+public final class FieldBag<T: Equatable, Root: FormValues>: FieldBagProtocol {
     // MARK: Lifecycle
 
     public init(_ field: EffectorFormField<T, Root>) {
@@ -27,12 +35,6 @@ public final class FieldBag<T: Equatable, Root: FormValues>: ObservableObject {
             field.change(value)
         }
     }
-
-    public func change(_ newValue: T) {
-        field.change(newValue)
-    }
-
-    // MARK: Internal
 
     public var hasFocus: Bool = false {
         didSet {
