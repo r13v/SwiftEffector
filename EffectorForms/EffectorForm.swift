@@ -2,11 +2,7 @@ import Effector
 import Foundation
 import SwiftUI
 
-public protocol Defaultable {
-    static var `default`: Self { get }
-}
-
-public typealias FormValues = Codable & Equatable & Defaultable
+public typealias FormValues = Codable & Equatable
 
 public final class EffectorForm<Values: FormValues> {
     // MARK: Lifecycle
@@ -17,9 +13,6 @@ public final class EffectorForm<Values: FormValues> {
     ) {
         self.validateOn = validateOn
         self.filter = filter
-
-        let keys = Mirror(reflecting: Values.default).children.map { $0.label! }
-        self.allFieldsNames = Set(keys)
     }
 
     // MARK: Public
@@ -100,16 +93,6 @@ public final class EffectorForm<Values: FormValues> {
     public func register<Value: Equatable>(
         field: EffectorFormField<Value, Values>
     ) -> EffectorFormField<Value, Values> {
-        if !allFieldsNames.contains(field.name) {
-            preconditionFailure("Unknown field '\(field.name)'")
-        }
-
-        if registeredFieldsNames.contains(field.name) {
-            preconditionFailure("Field '\(field.name)' already registered")
-        }
-
-        registeredFieldsNames.insert(field.name)
-
         isValidFlags.append(field.isValid)
         isDirtyFlags.append(field.isDirty)
         isTouchedFlags.append(field.isTouched)
@@ -136,35 +119,10 @@ public final class EffectorForm<Values: FormValues> {
             )
         }
 
-        defer {
-            buildFormIfReady()
-        }
-
         return field
     }
 
-    // MARK: Internal
-
-    var validateOn: Set<ValidationEvent>
-    var filter: Store<Bool>
-
-    // MARK: Private
-
-    private var validationBindings = [(values: Store<Values>) -> Void]()
-
-    private var isValidFlags = [Store<Bool>]()
-    private var isDirtyFlags = [Store<Bool>]()
-    private var isTouchedFlags = [Store<Bool>]()
-    private var valuesStores = [Store<Any>]()
-
-    private var allFieldsNames: Set<String>
-    private var registeredFieldsNames = Set<String>()
-
-    private func buildFormIfReady() {
-        guard registeredFieldsNames == allFieldsNames else {
-            return
-        }
-
+    public func build() {
         isValid = allSatisfy(isValidFlags) { $0 }
         isDirty = contains(isDirtyFlags) { $0 }
         isTouched = contains(isTouchedFlags) { $0 }
@@ -202,6 +160,20 @@ public final class EffectorForm<Values: FormValues> {
             target: validated
         )
     }
+
+    // MARK: Internal
+
+    var validateOn: Set<ValidationEvent>
+    var filter: Store<Bool>
+
+    // MARK: Private
+
+    private var validationBindings = [(values: Store<Values>) -> Void]()
+
+    private var isValidFlags = [Store<Bool>]()
+    private var isDirtyFlags = [Store<Bool>]()
+    private var isTouchedFlags = [Store<Bool>]()
+    private var valuesStores = [Store<Any>]()
 }
 
 public extension EffectorForm {

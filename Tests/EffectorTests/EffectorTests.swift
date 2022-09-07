@@ -497,7 +497,7 @@ final class EffectorTests: XCTestCase {
             map: { "n = \($0)" },
             target: target
         )
-        
+
         trigger(10)
 
         XCTAssertEqual(log, ["n = 10"])

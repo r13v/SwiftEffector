@@ -4,15 +4,11 @@ import Effector
 import XCTest
 
 struct SignInForm: FormValues {
-    static var `default` = SignInForm(email: "", password: "")
-
     var email: String
     var password: String
 }
 
 struct SignUpForm: FormValues {
-    static var `default` = SignUpForm(email: "", password: "", confirm: "")
-
     var email: String
     var password: String
     var confirm: String
@@ -78,6 +74,7 @@ final class FormTests: XCTestCase {
 
         form.register(field: email)
         form.register(field: password)
+        form.build()
 
         var formSubmitted = false
 
@@ -176,6 +173,9 @@ final class FormTests: XCTestCase {
         form.register(field: email)
         form.register(field: password)
         form.register(field: confirm)
+
+        form.build()
+
         var formSubmitted = false
 
         form.submitted.watch { _ in formSubmitted = true }
@@ -228,6 +228,8 @@ final class FormTests: XCTestCase {
 
         form.register(field: email)
         form.register(field: password)
+
+        form.build()
     }
 
     func testSetForm() async throws {
@@ -247,6 +249,7 @@ final class FormTests: XCTestCase {
 
         form.register(field: email)
         form.register(field: password)
+        form.build()
 
         let filled = SignInForm(email: "test@example.com", password: "123")
 
@@ -284,6 +287,7 @@ final class FormTests: XCTestCase {
 
         form.register(field: email)
         form.register(field: password)
+        form.build()
 
         serverError.reset(form.values.updates)
 
@@ -338,6 +342,7 @@ final class FormTests: XCTestCase {
         )
         form.register(field: email)
         form.register(field: password)
+        form.build()
 
         email.change("123")
         password.change("123")
@@ -382,6 +387,7 @@ final class FormTests: XCTestCase {
 
         form.register(field: email)
         form.register(field: password)
+        form.build()
 
         form.submit()
         XCTAssertFalse(email.isValid.getState())
@@ -416,6 +422,7 @@ final class FormTests: XCTestCase {
         )
         form.register(field: email)
         form.register(field: password)
+        form.build()
 
         XCTAssertFalse(email.isDirty.getState())
         XCTAssertFalse(password.isDirty.getState())
@@ -543,6 +550,7 @@ final class FormTests: XCTestCase {
 
         form.register(field: email)
         form.register(field: password)
+        form.build()
 
         email.change("123")
         password.change("123")
