@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 
 public final class FieldBag<T: Equatable, Root: FormValues>: ObservableObject {
     // MARK: Lifecycle
@@ -19,6 +19,9 @@ public final class FieldBag<T: Equatable, Root: FormValues>: ObservableObject {
     // MARK: Public
 
     @Published
+    public private(set) var error: String?
+
+    @Published
     public var value: T {
         didSet {
             field.change(value)
@@ -30,9 +33,6 @@ public final class FieldBag<T: Equatable, Root: FormValues>: ObservableObject {
     }
 
     // MARK: Internal
-
-    @Published
-    private(set) var error: String?
 
     var hasFocus: Bool = false {
         didSet {
