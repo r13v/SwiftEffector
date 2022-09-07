@@ -34,7 +34,7 @@ public final class FieldBag<T: Equatable, Root: FormValues>: ObservableObject {
 
     // MARK: Internal
 
-    var hasFocus: Bool = false {
+    public var hasFocus: Bool = false {
         didSet {
             if !field.isTouched.getState() {
                 field.isTouched.setState(true)
