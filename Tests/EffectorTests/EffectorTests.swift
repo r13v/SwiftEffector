@@ -485,6 +485,24 @@ final class EffectorTests: XCTestCase {
         XCTAssertEqual(log, [0])
     }
 
+    func testSampleEventToEffectMapped() async throws {
+        var log = [String]()
+        let trigger = Event<Int>()
+        let target = Effect<String, String, Error> { $0 }
+
+        target.doneData.watch { log.append($0) }
+
+        sample(
+            trigger: trigger,
+            map: { "n = \($0)" },
+            target: target
+        )
+        
+        trigger(10)
+
+        XCTAssertEqual(log, ["n = 10"])
+    }
+
     func testQueuePriority() async throws {
         /*
          case child = 1 // forward

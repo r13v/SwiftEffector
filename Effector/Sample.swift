@@ -370,7 +370,7 @@ public func sample<Payload, Mapped, Done, Fail>(
     trigger: Event<Payload>,
     filter: ((Payload) -> Bool)? = nil,
     map: @escaping (Payload) -> Mapped,
-    target: Effect<Payload, Done, Fail>
+    target: Effect<Mapped, Done, Fail>
 ) -> Event<Mapped> {
     sampleBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
 }
@@ -381,7 +381,7 @@ public func sample<Payload, Mapped, Done, Fail>(
     trigger: Event<Payload>,
     filter: Store<Bool>,
     map: @escaping (Payload) -> Mapped,
-    target: Effect<Payload, Done, Fail>
+    target: Effect<Mapped, Done, Fail>
 ) -> Event<Mapped> {
     sampleBase(name: name, trigger: trigger, filter: filter, map: map, target: target)
 }
