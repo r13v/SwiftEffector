@@ -1,5 +1,7 @@
 enum Tracing {
-    @TaskLocal static var id: Int = 0
+    @TaskLocal
+    static var id: Int = 0
+
     static let next = NextID()
 }
 

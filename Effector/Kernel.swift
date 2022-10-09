@@ -1,8 +1,11 @@
 func exec() {
+    var barriers = Set<Int>()
+
     cycle: while let element = Queue.shared.dequeue() {
+        let node = element.node
         var value = element.value
 
-        for step in element.node.seq {
+        for step in node.seq {
             switch step {
             case let .compute(_, fn):
                 value = fn(value)
@@ -16,14 +19,23 @@ func exec() {
             }
         }
 
-        for node in element.node.next {
-            Queue.shared.enqueue(node, value)
+        for nextNode in element.node.next {
+            if nextNode.priority == .combine {
+                if barriers.contains(nextNode.id) {
+                    continue
+                }
+
+                barriers.insert(nextNode.id)
+            }
+
+            Queue.shared.enqueue(nextNode, value)
         }
     }
 }
 
 func launch<Payload>(_ node: Node, _ payload: Payload) {
     Queue.shared.enqueue(node, payload)
+
     exec()
 }
 
