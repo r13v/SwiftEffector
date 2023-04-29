@@ -10,6 +10,7 @@ public final class Store<State>: Unit, ObservableObject {
         self.isDerived = isDerived
 
         updates = Event(name: "\(name):updates", isDerived: true)
+        reinit = Event(name: "\(name):reinit")
 
         graphite = Node(name: "store", kind: .store, priority: .child)
         let step = Node.Step.compute("state:assign") { state in
@@ -30,11 +31,17 @@ public final class Store<State>: Unit, ObservableObject {
         }
         graphite.seq.append(step)
         graphite.appendNext(updates.graphite)
+
+        if !isDerived {
+            reset(reinit)
+        }
     }
 
     // MARK: Public
 
     public var updates: Event<State>
+
+    public var reinit: Event<Void>
 
     public var graphite: Node
 
