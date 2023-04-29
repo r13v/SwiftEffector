@@ -35,7 +35,7 @@ public final class Node {
         case effect = 5 // watch, effect handler
     }
 
-    let id: Int
+    let id: String
     let name: String
     let kind: Kind
     let priority: PriorityTag
@@ -53,7 +53,7 @@ public final class Node {
 
     // MARK: Private
 
-    private static let nextID = NextID()
+    private static let nextID = uniqId("n-")
 }
 
 extension Node: CustomStringConvertible {

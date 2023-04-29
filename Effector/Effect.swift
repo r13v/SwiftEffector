@@ -1,8 +1,8 @@
 enum Tracing {
     @TaskLocal
-    static var id: Int = 0
+    static var id: String = next()
 
-    static let next = NextID()
+    static let next = uniqId("trace-")
 }
 
 public final class Effect<Params, Done, Fail: Error>: Unit {

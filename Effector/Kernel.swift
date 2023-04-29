@@ -1,5 +1,5 @@
 func exec() {
-    var barriers = Set<Int>()
+    var barriers = Set<String>()
 
     cycle: while let element = Queue.shared.dequeue() {
         let node = element.node
