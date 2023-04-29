@@ -51,6 +51,11 @@ public final class Node {
         next.insert(node, at: 0)
     }
 
+    func clear() {
+        next = []
+        seq = []
+    }
+
     // MARK: Private
 
     private static let nextID = uniqId("n-")
