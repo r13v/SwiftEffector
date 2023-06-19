@@ -1,4 +1,3 @@
-import Foundation
 import SwiftUI
 
 @propertyWrapper
@@ -33,18 +32,4 @@ public struct Use<T>: DynamicProperty {
 
     @ObservedObject
     private var store: Store<T>
-}
-
-public extension Store {
-    func binding(_ change: Event<State>? = nil) -> Binding<State> {
-        Binding {
-            self.currentState
-        } set: { value in
-            if let change {
-                change(value)
-            } else {
-                self.setState(value)
-            }
-        }
-    }
 }
