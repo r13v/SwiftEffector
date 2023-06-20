@@ -104,6 +104,17 @@ final class EffectorTests: XCTestCase {
         XCTAssertEqual(store.getState(), 1)
     }
 
+    func testStoreNot() async throws {
+        let store = Store(false)
+        let inverted = store.not()
+
+        XCTAssertEqual(inverted.getState(), true)
+
+        store.setState(true)
+
+        XCTAssertEqual(inverted.getState(), false)
+    }
+
     func testStoreOn() async throws {
         let inc = Event<Void>()
         let reset = Event<Void>()
