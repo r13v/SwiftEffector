@@ -34,7 +34,7 @@ public struct Use<T>: DynamicProperty {
     private var store: Store<T>
 }
 
-extension Use {
+public extension Use {
     static func constant(_ value: T) -> Use<T> {
         Self(.init(value))
     }
