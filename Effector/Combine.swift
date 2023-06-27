@@ -6,7 +6,7 @@ public func combine<Combined, A, B>(
     _ fn: @escaping (A, B) -> Combined
 ) -> Store<Combined> {
     let combined = Store<Combined>(
-        name: "combine",
+        name: "combine(\(a.name), \(b.name))",
         fn(a.getState(), b.getState()),
         isDerived: true
     )
@@ -32,7 +32,7 @@ public func combine<Combined, A, B, C>(
     _ fn: @escaping (A, B, C) -> Combined
 ) -> Store<Combined> {
     let combined = Store<Combined>(
-        name: "combine",
+        name: "combine(\(a.name), \(b.name), \(c.name))",
         fn(a.getState(), b.getState(), c.getState()),
         isDerived: true
     )
@@ -59,7 +59,7 @@ public func combine<Combined, A, B, C, D>(
     _ fn: @escaping (A, B, C, D) -> Combined
 ) -> Store<Combined> {
     let combined = Store<Combined>(
-        name: "combine",
+        name: "combine(\(a.name), \(b.name), \(c.name), \(d.name))",
         fn(a.getState(), b.getState(), c.getState(), d.getState()),
         isDerived: true
     )
@@ -88,7 +88,7 @@ public func combine<Combined, A, B, C, D, E>(
     _ fn: @escaping (A, B, C, D, E) -> Combined
 ) -> Store<Combined> {
     let combined = Store<Combined>(
-        name: "combine",
+        name: "combine(\(a.name), \(b.name), \(c.name), \(d.name), \(e.name))",
         fn(a.getState(), b.getState(), c.getState(), d.getState(), e.getState()),
         isDerived: true
     )
@@ -118,7 +118,7 @@ public func combine<Combined, A, B, C, D, E, F>(
     _ fn: @escaping (A, B, C, D, E, F) -> Combined
 ) -> Store<Combined> {
     let combined = Store<Combined>(
-        name: "combine",
+        name: "combine(\(a.name), \(b.name), \(c.name), \(d.name), \(e.name), \(f.name))",
         fn(a.getState(), b.getState(), c.getState(), d.getState(), e.getState(), f.getState()),
         isDerived: true
     )
@@ -149,8 +149,10 @@ public func combine<Combined, A, B, C, D, E, F>(
 public func combine<Combined: Codable>(_ stores: [Store<Any>]) -> Store<Combined> {
     let jsonDecoder = JSONDecoder()
 
+    let names = stores.map { $0.name }.joined(separator: ", ")
+
     let combined = Store<Combined>(
-        name: "combine",
+        name: "combine(\(names))",
         group(decoder: jsonDecoder, stores: stores),
         isDerived: true
     )
@@ -165,7 +167,7 @@ public func combine<Combined: Codable>(_ stores: [Store<Any>]) -> Store<Combined
         guard let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: []),
               let result = try? jsonDecoder.decode(Combined.self, from: jsonData)
         else {
-            preconditionFailure("Can't combine to \(type(of: Combined.self))")
+            fatalError("Can't combine to \(type(of: Combined.self))")
         }
 
         return result
