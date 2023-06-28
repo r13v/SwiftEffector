@@ -72,4 +72,30 @@ final class CombineTests: XCTestCase {
 
         XCTAssertEqual(c.name, "combine(a, b)")
     }
+
+    func testCombineAndSample() async throws {
+        let a = Store(name: "a", 1)
+        let b = Store(name: "b", 2)
+
+        let c = combine(a, b) { $0 + $1 }
+
+        let fx = Effect<Void, Void, Error> {
+            sleep(1)
+        }
+
+        b.on(fx.done) { _, _ in 0 }
+
+        sample(
+            trigger: fx.done,
+            map: { _ in 10 },
+            target: a
+        )
+
+        a.debug()
+        c.debug()
+
+        try await fx()
+
+        XCTAssertEqual(c.getState(), 10)
+    }
 }
