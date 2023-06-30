@@ -1,9 +1,19 @@
+let DEBUG = false
+
+func debugPrint(_ message: String) {
+    if DEBUG {
+        print(message)
+    }
+}
+
 func exec() {
-    var barriers = Set<String>()
+    debugPrint("--- exec ---")
 
     cycle: while let element = Queue.shared.dequeue() {
         let node = element.node
         var value = element.value
+
+        debugPrint("cycle \(node), \(value)")
 
         for step in node.seq {
             switch step {
@@ -20,13 +30,7 @@ func exec() {
         }
 
         for nextNode in element.node.next {
-            if nextNode.priority == .combine {
-                if barriers.contains(nextNode.id) {
-                    continue
-                }
-
-                barriers.insert(nextNode.id)
-            }
+            debugPrint("enqueue \(node), \(value)")
 
             Queue.shared.enqueue(nextNode, value)
         }

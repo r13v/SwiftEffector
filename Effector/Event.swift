@@ -12,6 +12,8 @@ public final class Event<Payload>: Unit {
     public var graphite: Node
     public var name: String
 
+    public private(set) var isDerived: Bool
+
     public var kind: String { "event" }
 
     public func callAsFunction(_ payload: Payload) {
@@ -105,10 +107,6 @@ public final class Event<Payload>: Unit {
 
         return mapped
     }
-
-    // MARK: Internal
-
-    var isDerived: Bool
 }
 
 public extension Event where Payload == Void {

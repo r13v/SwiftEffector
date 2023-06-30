@@ -345,8 +345,6 @@ final class EffectorTests: XCTestCase {
 
         try await inc(1)
 
-        sleep(1)
-
         XCTAssertEqual(log, [false, true, false])
     }
 

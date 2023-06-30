@@ -9,8 +9,9 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
     // MARK: Lifecycle
 
     // swiftlint:disable:next function_body_length
-    public init(name: String = "effect", _ handler: @escaping Handler) {
+    public init(name: String = "effect", isDerived: Bool = false, _ handler: @escaping Handler) {
         self.name = name
+        self.isDerived = isDerived
         graphite = Node(name: name, kind: .effect, priority: .effect)
 
         self.handler = handler
@@ -21,7 +22,7 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
         finally = Event<Finally>(name: "\(name):finally", isDerived: true)
 
         done = finally
-            .filterMap(name: "effect:done") { result in
+            .filterMap(name: "\(name):done") { result in
                 guard case let .done(params, done) = result else {
                     return nil
                 }
@@ -125,6 +126,8 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
 
     public var name: String
 
+    public private(set) var isDerived: Bool
+
     public var kind: String { "effect" }
 
     @discardableResult
@@ -135,7 +138,7 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
     @discardableResult
     public func run(_ params: Params) async throws -> Done {
         return try await Tracing.$id.withValue(Tracing.next()) {
-            return try await withCheckedThrowingContinuation { continuation in
+            try await withCheckedThrowingContinuation { continuation in
 
                 let effectParams = EffectParams(
                     params: params,

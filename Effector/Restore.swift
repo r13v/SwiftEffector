@@ -1,5 +1,5 @@
 public func restore<T>(_ event: Event<T>, _ initial: T) -> Store<T> {
-    let store = Store(name: "restore", initial)
+    let store = Store(name: "\(event.name):restore", initial)
 
     store.on(event) { _, payload in payload }
 
@@ -7,7 +7,7 @@ public func restore<T>(_ event: Event<T>, _ initial: T) -> Store<T> {
 }
 
 public func restore<T>(_ event: Event<T>) -> Store<T?> {
-    let store = Store<T?>(name: "restore", nil)
+    let store = Store<T?>(name: "\(event.name):restore", nil)
 
     store.on(event) { _, payload in payload }
 

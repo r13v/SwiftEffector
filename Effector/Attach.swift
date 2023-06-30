@@ -3,7 +3,7 @@ public func attach<State, Params, Done, Fail>(
     store: Store<State>,
     effect fn: @escaping (State, Params) async throws -> Done
 ) -> Effect<Params, Done, Fail> {
-    let fx = Effect<Params, Done, Fail>(name: name ?? "attach") { params in
+    let fx = Effect<Params, Done, Fail>(name: name ?? "attach", isDerived: true) { params in
         try await fn(store.getState(), params)
     }
 
@@ -17,7 +17,7 @@ public func attach<State, Mapped, Params, Done, Fail>(
     effect: Effect<Mapped, Done, Fail>
 ) -> Effect<Params, Done, Fail> {
     let effectFn = effect.getCurrent()
-    let fx = Effect<Params, Done, Fail>(name: name ?? "attach") { params in
+    let fx = Effect<Params, Done, Fail>(name: name ?? "attach", isDerived: true) { params in
         let mapped = map(store.getState(), params)
         return try await effectFn(mapped)
     }

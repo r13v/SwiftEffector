@@ -19,7 +19,10 @@ public final class Node {
     // MARK: Internal
 
     enum Kind: String {
-        case regular, event, store, effect
+        case regular
+        case event
+        case store
+        case effect
     }
 
     enum Step {
@@ -63,7 +66,7 @@ public final class Node {
 
 extension Node: CustomStringConvertible {
     public var description: String {
-        "[\(id):\(kind)] \(name)"
+        "[\(id) \(kind):\(priority)] \(name)"
     }
 }
 

@@ -25,7 +25,7 @@ final class CombineTests: XCTestCase {
 
     func testCombineBarrier() async throws {
         let store1 = Store(0)
-        let derived1 = store1.map { _ in 0 }
+        let derived1 = store1.map { $0 + 1 }
         let store2 = Store(10)
         let derived2 = store2.map { _ in 0 }
         let derived3 = store2.map { _ in 0 }
@@ -34,20 +34,26 @@ final class CombineTests: XCTestCase {
         let c = combine(store1, store2, derived1, derived2, derived3, derived4) { $0 + $1 + $2 + $3 + $4 + $5 }
 
         var updatesCount = 0
-        c.watch { _ in updatesCount += 1 }
+        var values = [Int]()
 
-        XCTAssertEqual(c.getState(), 10) // 0 + 10 = 10
+        c.watch { value in
+            updatesCount += 1
+            values.append(value)
+        }
+
+        XCTAssertEqual(c.getState(), 11) // 1 + 10 = 11
         XCTAssertEqual(updatesCount, 1)
 
         store1.setState(1)
 
-        XCTAssertEqual(c.getState(), 11) // 1 + 10 = 11
+        XCTAssertEqual(c.getState(), 13) // 1 + 2 + 10 = 13
         XCTAssertEqual(updatesCount, 2)
 
         store2.setState(20)
 
-        XCTAssertEqual(c.getState(), 21) // 1 + 20 = 21
+        XCTAssertEqual(c.getState(), 23) // 13 + 20 = 23
         XCTAssertEqual(updatesCount, 3)
+        XCTAssertEqual(values, [11, 13, 23])
     }
 
     func testCombineNames() async throws {
@@ -79,7 +85,7 @@ final class CombineTests: XCTestCase {
 
         let c = combine(a, b) { $0 + $1 }
 
-        let fx = Effect<Void, Void, Error> {
+        let fx = Effect<Void, Void, Error>(name: "fx") {
             sleep(1)
         }
 
@@ -90,9 +96,6 @@ final class CombineTests: XCTestCase {
             map: { _ in 10 },
             target: a
         )
-
-        a.debug()
-        c.debug()
 
         try await fx()
 

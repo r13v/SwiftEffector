@@ -10,26 +10,29 @@ public final class Store<State>: Unit, ObservableObject {
         self.isDerived = isDerived
 
         updates = Event(name: "\(name):updates", isDerived: true)
-        reinit = Event(name: "\(name):reinit")
+        reinit = Event(name: "\(name):reinit", isDerived: true)
 
-        graphite = Node(name: "store", kind: .store, priority: .child)
-        let step = Node.Step.compute("state:assign") { state in
+        graphite = Node(name: name, kind: .store, priority: .child)
+
+        let filter = Node.Step.filter("\name:filter") { state in
+            !areEqual(state, self.currentState)
+        }
+
+        let assign = Node.Step.compute("\(name):assign") { state in
             // swiftlint:disable:next force_cast
             let newState = state as! State
 
-            if !areEqual(self.currentState, newState) {
-                if Thread.isMainThread {
+            if Thread.isMainThread {
+                self.currentState = newState
+            } else {
+                DispatchQueue.main.sync {
                     self.currentState = newState
-                } else {
-                    DispatchQueue.main.sync {
-                        self.currentState = newState
-                    }
                 }
             }
 
             return newState
         }
-        graphite.seq.append(step)
+        graphite.seq.append(contentsOf: [filter, assign])
         graphite.appendNext(updates.graphite)
 
         if !isDerived {
@@ -50,6 +53,8 @@ public final class Store<State>: Unit, ObservableObject {
     public let name: String
 
     @Published public private(set) var currentState: State
+
+    public private(set) var isDerived: Bool
 
     public var kind: String { "store" }
 
@@ -152,10 +157,6 @@ public final class Store<State>: Unit, ObservableObject {
         return erased
     }
 
-    // MARK: Internal
-
-    var isDerived: Bool
-
     // MARK: Private
 
     private func onBase(name: String? = nil, _ units: [Unit], _ fn: @escaping (State, Any) -> State) -> Self {
@@ -176,3 +177,14 @@ public final class Store<State>: Unit, ObservableObject {
         return self
     }
 }
+
+ public func areEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+    guard lhs is AnyHashable else {
+        return false
+    }
+    guard rhs is AnyHashable else {
+        return false
+    }
+
+    return (lhs as! AnyHashable) == (rhs as! AnyHashable)
+ }

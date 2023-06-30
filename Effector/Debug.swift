@@ -1,10 +1,8 @@
 extension Store {
     @discardableResult
     func debug() -> Self {
-        print("\(self.name)::init -> ", self.currentState)
-
-        self.watch { state in
-            print("\(self.name) -> ", state)
+        self.watch {
+            print("\(self.graphite) -> ", $0)
         }
 
         return self
@@ -14,8 +12,8 @@ extension Store {
 extension Event {
     @discardableResult
     func debug() -> Self {
-        self.watch { payload in
-            print("\(self.name) -> ", payload)
+        self.watch {
+            print("\(self.graphite) -> ", $0)
         }
 
         return self
@@ -25,20 +23,20 @@ extension Event {
 extension Effect {
     @discardableResult
     func debug() -> Self {
-        self.watch { payload in
-            print("\(self.name) -> ", payload)
+        self.watch {
+            print("\(self.graphite) -> ", $0)
         }
 
-        self.pending.watch { pending in
-            print("\(self.name)::pending -> ", pending)
+        self.pending.watch {
+            print("\(self.graphite) -> ", $0)
         }
 
-        self.done.watch { done in
-            print("\(self.name)::done -> ", done)
+        self.done.watch {
+            print("\(self.graphite) -> ", $0)
         }
 
-        self.fail.watch { fail in
-            print("\(self.name)::fail -> ", fail)
+        self.fail.watch {
+            print("\(self.graphite) -> ", $0)
         }
 
         return self
