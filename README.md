@@ -6,47 +6,51 @@
 import Effector
 import SwiftUI
 
-let store = Store(0)
-let inc = Event<Void>()
-let dec = Event<Void>()
+enum CounterFeature {
+    static let counter = Store(0)
+    static let inc = Event<Void>()
+    static let dec = Event<Void>()
 
-let logFx = Effect<Int, Void, Error> { n in print("n: \(n)") }
+    static let logFx = Effect<Int, Void, Error> { n in print("n: \(n)") }
 
-let incAsync: Effect<Void, Int, Error> = attach(store: store) { store, _ in
-    try? await Task.sleep(nanoseconds: 2_000_000_000)
-    return store + 10
-}
+    static let incAsync: Effect<Void, Int, Error> = attach(store: counter) { store, _ in
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        return store + 10
+    }
 
-func bootstrap() {
-    store
-        .on(inc) { n, _ in n + 1 }
-        .on(dec) { n, _ in n - 1 }
+    static func bind() {
+        counter
+            .on(inc) { n, _ in n + 1 }
+            .on(dec) { n, _ in n - 1 }
+            .on(incAsync.doneData) { _, n in n }
 
-    sample(
-        trigger: store.updates,
-        source: store,
-        map: { s, _ in s + 10 },
-        target: logFx
-    )
-
-    forward(from: [incAsync.doneData], to: [store])
+        sample(
+            trigger: counter.updates,
+            target: logFx
+        )
+    }
 }
 
 struct ContentView: View {
+    // MARK: Lifecycle
+
     init() {
-        bootstrap()
+        CounterFeature.bind()
     }
 
-    @UseStore(store) var value
+    // MARK: Internal
+
+    @Use(CounterFeature.counter)
+    var counter
 
     var body: some View {
         VStack {
-            Text("\(value)")
+            Text("\(counter)")
 
-            Button("dec", action: dec.run)
-            Button("inc", action: inc.run)
-            Button("inc 10 async", action: { Task { try await incAsync() }})
-            Button("set 100") { value = 100 }
+            Button("dec", action: CounterFeature.dec.run)
+            Button("inc", action: CounterFeature.inc.run)
+            Button("inc 10 async", action: { Task { try await CounterFeature.incAsync() }})
+            Button("set 100") { counter = 100 }
         }
     }
 }
@@ -56,4 +60,5 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
+
 ```

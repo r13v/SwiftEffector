@@ -14,7 +14,7 @@ public final class Store<State>: Unit, ObservableObject {
 
         graphite = Node(name: name, kind: .store, priority: .child)
 
-        let filter = Node.Step.filter("\name:filter") { state in
+        let filter = Node.Step.filter("\(name):filter") { state in
             !areEqual(state, self.currentState)
         }
 
@@ -32,6 +32,7 @@ public final class Store<State>: Unit, ObservableObject {
 
             return newState
         }
+
         graphite.seq.append(contentsOf: [filter, assign])
         graphite.appendNext(updates.graphite)
 
@@ -178,13 +179,14 @@ public final class Store<State>: Unit, ObservableObject {
     }
 }
 
- public func areEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+public func areEqual(_ lhs: Any, _ rhs: Any) -> Bool {
     guard lhs is AnyHashable else {
         return false
     }
+
     guard rhs is AnyHashable else {
         return false
     }
 
     return (lhs as! AnyHashable) == (rhs as! AnyHashable)
- }
+}
