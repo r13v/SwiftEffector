@@ -10,6 +10,7 @@ enum CounterFeature {
     static let counter = Store(0)
     static let inc = Event<Void>()
     static let dec = Event<Void>()
+    static let CounterGate = Gate<Int>()
 
     static let logFx = Effect<Int, Void, Error> { n in print("n: \(n)") }
 
@@ -28,6 +29,11 @@ enum CounterFeature {
             trigger: counter.updates,
             target: logFx
         )
+
+        CounterGate.open.watch { print("Gate open: \($0)") }
+        CounterGate.close.watch { print("Gate close: \($0)") }
+        CounterGate.status.watch { print("Gate status: \($0)") }
+        CounterGate.state.watch { print("Gate state: \(String(describing: $0))") }
     }
 }
 
@@ -51,6 +57,7 @@ struct ContentView: View {
             Button("inc", action: CounterFeature.inc.run)
             Button("inc 10 async", action: { Task { try await CounterFeature.incAsync() }})
             Button("set 100") { counter = 100 }
+            CounterFeature.CounterGate(counter)
         }
     }
 }

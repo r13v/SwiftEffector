@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct Gate<T> {
+public struct Gate<Value> {
     // MARK: Lifecycle
 
     public init() {
@@ -15,13 +15,15 @@ public struct Gate<T> {
 
     // MARK: Public
 
-    public let state = Store<T?>(nil)
+    public let state = Store<Value?>(nil)
     public let status = Store(false)
-    public let open = Event<T>()
+    public let open = Event<Value>()
     public let close = Event<Void>()
 
-    public func view(_ value: T) -> some View {
-        Rectangle()
+    public func callAsFunction(_ value: Value) -> some View {
+        state.setState(value)
+
+        return Rectangle()
             .hidden()
             .onAppear {
                 open(value)
@@ -32,8 +34,8 @@ public struct Gate<T> {
     }
 }
 
-public extension Gate where T == Void {
-    func view() -> some View {
-        view(())
+public extension Gate where Value == Void {
+    func callAsFunction() -> some View {
+        callAsFunction(())
     }
 }
