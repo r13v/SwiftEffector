@@ -6,14 +6,31 @@ public final class Node {
         kind: Kind,
         priority: PriorityTag,
         next: [Node] = [],
-        seq: [Step] = []
+        seq: [Step] = [],
+        family: Family = Family(type: .regular, links: [], owners: [])
     ) {
-        id = Node.nextID()
+        id = Node.nextID
+        Node.nextID += 1
         self.name = name
         self.kind = kind
         self.priority = priority
         self.next = next
         self.seq = seq
+        self.family = family
+    }
+
+    // MARK: Public
+
+    public struct Family {
+        enum FamilyType {
+            case regular
+            case crosslink
+            case domain
+        }
+
+        var type: FamilyType
+        var links: [Node]
+        var owners: [Node]
     }
 
     // MARK: Internal
@@ -23,6 +40,7 @@ public final class Node {
         case event
         case store
         case effect
+        case domain
     }
 
     enum Step {
@@ -38,10 +56,11 @@ public final class Node {
         case effect = 5 // watch, effect handler
     }
 
-    let id: String
+    let id: Int
     let name: String
     let kind: Kind
     let priority: PriorityTag
+    let family: Family
 
     private(set) var next: [Node]
     var seq: [Step]
@@ -61,7 +80,7 @@ public final class Node {
 
     // MARK: Private
 
-    private static let nextID = uniqId("n-")
+    private static var nextID = 0
 }
 
 extension Node: CustomStringConvertible {
@@ -75,23 +94,19 @@ func createNode(
     name: String,
     kind: Node.Kind = .regular,
     priority: Node.PriorityTag,
-    from: [Unit] = [],
+    from: [Node] = [],
     seq: [Node.Step] = [],
-    to: [Unit] = []
+    to: [Node] = []
 ) -> Node {
-    let next = to.map(\.graphite)
-
     let node = Node(
         name: name,
         kind: kind,
         priority: priority,
-        next: next,
+        next: to,
         seq: seq
     )
 
-    from.forEach { unit in
-        unit.graphite.appendNext(node)
-    }
+    from.forEach { $0.appendNext(node) }
 
     return node
 }

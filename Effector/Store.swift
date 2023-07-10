@@ -1,5 +1,7 @@
 import Foundation
 
+public typealias AnyStore = Store<Any>
+
 public final class Store<State>: Unit, ObservableObject {
     // MARK: Lifecycle
 
@@ -59,17 +61,20 @@ public final class Store<State>: Unit, ObservableObject {
 
     public var kind: String { "store" }
 
-    public func watch(name: String? = nil, _ fn: @escaping (State) -> Void) {
+    @discardableResult
+    public func watch(name: String? = nil, _ fn: @escaping (State) -> Void) -> Subscription {
         let nodeName = name ?? "\(self.name):watch"
 
         fn(currentState)
 
-        createNode(
+        let node = createNode(
             name: nodeName,
             priority: .effect,
-            from: [self],
+            from: [graphite],
             seq: [.compute(nodeName, eraseCompute(fn))]
         )
+
+        return { clear(node) }
     }
 
     @discardableResult
@@ -132,30 +137,26 @@ public final class Store<State>: Unit, ObservableObject {
         createNode(
             name: nodeName,
             priority: .pure,
-            from: [self],
+            from: [graphite],
             seq: [.compute(nodeName, eraseCompute(fn))],
-            to: [mapped]
+            to: [mapped.graphite]
         )
 
         return mapped
     }
 
-    public func erased(name: String? = nil) -> Store<Any> {
-        let nodeName = name ?? "\(self.name):erased"
+    public func erase() -> AnyStore {
+        let store: AnyStore = Store<Any>(name: name, defaultState, isDerived: isDerived)
 
-        let erased = Store<Any>(name: nodeName, currentState, isDerived: true)
+        store.graphite = graphite
+        store.reinit = reinit
+        store.updates = updates.erase()
 
-        let node = Node(
-            name: nodeName,
-            kind: .regular,
-            priority: .pure,
-            next: [erased.graphite],
-            seq: []
-        )
+        $currentState
+            .map { $0 as Any }
+            .assign(to: &store.$currentState)
 
-        graphite.prependNext(node)
-
-        return erased
+        return store
     }
 
     // MARK: Private
@@ -170,9 +171,9 @@ public final class Store<State>: Unit, ObservableObject {
         createNode(
             name: nodeName,
             priority: .pure,
-            from: units,
+            from: units.map(\.graphite),
             seq: [.compute(nodeName) { payload in fn(self.currentState, payload) }],
-            to: [self]
+            to: [graphite]
         )
 
         return self

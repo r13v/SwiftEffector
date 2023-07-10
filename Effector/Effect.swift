@@ -159,15 +159,18 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
         handler
     }
 
-    public func watch(name: String? = nil, _ fn: @escaping (Params) -> Void) {
+    @discardableResult
+    public func watch(name: String? = nil, _ fn: @escaping (Params) -> Void) -> Subscription {
         let nodeName = name ?? "\(self.name):watch"
 
-        createNode(
+        let node = createNode(
             name: nodeName,
             priority: .effect,
-            from: [self],
+            from: [graphite],
             seq: [.compute(nodeName, eraseCompute(fn))]
         )
+
+        return { clear(node) }
     }
 
     public func prepend<Before>(name: String? = nil, _ fn: @escaping (Before) -> Params) -> Event<Before> {
@@ -178,9 +181,9 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
         createNode(
             name: nodeName,
             priority: .child,
-            from: [before],
+            from: [before.graphite],
             seq: [.compute(nodeName, eraseCompute(fn))],
-            to: [self]
+            to: [graphite]
         )
 
         return before

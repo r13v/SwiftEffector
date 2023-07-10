@@ -1,3 +1,5 @@
+public typealias AnyEvent = Event<Any>
+
 public final class Event<Payload>: Unit {
     // MARK: Lifecycle
 
@@ -28,13 +30,16 @@ public final class Event<Payload>: Unit {
         launch(graphite, payload)
     }
 
-    public func watch(_ fn: @escaping (Payload) -> Void) {
-        createNode(
+    @discardableResult
+    public func watch(_ fn: @escaping (Payload) -> Void) -> Subscription {
+        let node = createNode(
             name: "\(name):watch",
             priority: .effect,
-            from: [self],
+            from: [graphite],
             seq: [.compute("\(name):watch", eraseCompute(fn))]
         )
+
+        return { clear(node) }
     }
 
     public func map<Mapped>(name: String? = nil, _ fn: @escaping (Payload) -> Mapped) -> Event<Mapped> {
@@ -45,9 +50,9 @@ public final class Event<Payload>: Unit {
         createNode(
             name: nodeName,
             priority: .pure,
-            from: [self],
+            from: [graphite],
             seq: [.compute(nodeName, eraseCompute(fn))],
-            to: [mapped]
+            to: [mapped.graphite]
         )
 
         return mapped
@@ -61,9 +66,9 @@ public final class Event<Payload>: Unit {
         createNode(
             name: nodeName,
             priority: .child,
-            from: [before],
+            from: [before.graphite],
             seq: [.compute(nodeName, eraseCompute(fn))],
-            to: [self]
+            to: [graphite]
         )
 
         return before
@@ -77,10 +82,10 @@ public final class Event<Payload>: Unit {
         createNode(
             name: nodeName,
             priority: .pure,
-            from: [self],
+            from: [graphite],
             // swiftlint:disable:next force_cast
             seq: [.filter(nodeName) { p in fn(p as! Payload) }],
-            to: [filtered]
+            to: [filtered.graphite]
         )
 
         return filtered
@@ -94,7 +99,7 @@ public final class Event<Payload>: Unit {
         createNode(
             name: nodeName,
             priority: .pure,
-            from: [self],
+            from: [graphite],
             seq: [
                 .compute(nodeName, eraseCompute(fn)),
                 // swiftlint:disable:next force_cast
@@ -102,10 +107,17 @@ public final class Event<Payload>: Unit {
                 // swiftlint:disable:next force_cast
                 .compute(nodeName) { x in (x as! Mapped?)! }
             ],
-            to: [mapped]
+            to: [mapped.graphite]
         )
 
         return mapped
+    }
+
+    public func erase() -> AnyEvent {
+        let event = Event<Any>(name: name, isDerived: isDerived)
+        event.graphite = graphite
+
+        return event
     }
 }
 

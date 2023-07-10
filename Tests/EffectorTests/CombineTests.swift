@@ -69,7 +69,7 @@ final class CombineTests: XCTestCase {
         let storeA = Store<Any>(name: "a", 1)
         let storeB = Store<Any>(name: "b", 2)
 
-        struct C: Codable {
+        struct C: Decodable {
             let a: Int
             let b: Int
         }

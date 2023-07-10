@@ -17,9 +17,9 @@ public func combine<Combined, A, B>(
         name: "combine",
         kind: .store,
         priority: .combine,
-        from: [a, b],
+        from: [a.graphite, b.graphite],
         seq: [.compute("combine", eraseCompute(stepFn))],
-        to: [combined]
+        to: [combined.graphite]
     )
 
     return combined
@@ -43,9 +43,9 @@ public func combine<Combined, A, B, C>(
         name: "combine",
         kind: .store,
         priority: .combine,
-        from: [a, b, c],
+        from: [a.graphite, b.graphite, c.graphite],
         seq: [.compute("combine", eraseCompute(stepFn))],
-        to: [combined]
+        to: [combined.graphite]
     )
 
     return combined
@@ -70,9 +70,9 @@ public func combine<Combined, A, B, C, D>(
         name: "combine",
         kind: .store,
         priority: .combine,
-        from: [a, b, c, d],
+        from: [a.graphite, b.graphite, c.graphite, d.graphite],
         seq: [.compute("combine", eraseCompute(stepFn))],
-        to: [combined]
+        to: [combined.graphite]
     )
 
     return combined
@@ -99,9 +99,9 @@ public func combine<Combined, A, B, C, D, E>(
         name: "combine",
         kind: .store,
         priority: .combine,
-        from: [a, b, c, d, e],
+        from: [a.graphite, b.graphite, c.graphite, d.graphite, e.graphite],
         seq: [.compute("combine", eraseCompute(stepFn))],
-        to: [combined]
+        to: [combined.graphite]
     )
 
     return combined
@@ -138,15 +138,15 @@ public func combine<Combined, A, B, C, D, E, F>(
         name: "combine",
         kind: .store,
         priority: .combine,
-        from: [a, b, c, d, e, f],
+        from: [a.graphite, b.graphite, c.graphite, d.graphite, e.graphite, f.graphite],
         seq: [.compute("combine", eraseCompute(stepFn))],
-        to: [combined]
+        to: [combined.graphite]
     )
 
     return combined
 }
 
-public func combine<Combined: Codable>(_ stores: [Store<Any>]) -> Store<Combined> {
+public func combine<Combined: Decodable>(_ stores: [AnyStore]) -> Store<Combined> {
     let jsonDecoder = JSONDecoder()
 
     let names = stores.map { $0.name }.joined(separator: ", ")
@@ -157,7 +157,7 @@ public func combine<Combined: Codable>(_ stores: [Store<Any>]) -> Store<Combined
         isDerived: true
     )
 
-    func group(decoder: JSONDecoder, stores: [Store<Any>]) -> Combined {
+    func group(decoder: JSONDecoder, stores: [AnyStore]) -> Combined {
         var dict = [String: Any]()
 
         for store in stores {
@@ -179,9 +179,9 @@ public func combine<Combined: Codable>(_ stores: [Store<Any>]) -> Store<Combined
         name: "combine",
         kind: .store,
         priority: .combine,
-        from: stores,
+        from: stores.map(\.graphite),
         seq: [.compute("combine", eraseCompute(stepFn))],
-        to: [combined]
+        to: [combined].map(\.graphite)
     )
 
     return combined

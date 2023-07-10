@@ -11,9 +11,9 @@ public func allSatisfy<Value>(_ stores: [Store<Value>], _ fn: @escaping (Value) 
         name: "allSatisfy",
         kind: .store,
         priority: .combine,
-        from: stores,
+        from: stores.map(\.graphite),
         seq: [.compute("allSatisfy", eraseCompute(stepFn))],
-        to: [combined]
+        to: [combined.graphite]
     )
 
     return combined
@@ -32,9 +32,9 @@ public func contains<Value>(_ stores: [Store<Value>], _ fn: @escaping (Value) ->
         name: "contains",
         kind: .store,
         priority: .combine,
-        from: stores,
+        from: stores.map(\.graphite),
         seq: [.compute("contains", eraseCompute(stepFn))],
-        to: [combined]
+        to: [combined.graphite]
     )
 
     return combined

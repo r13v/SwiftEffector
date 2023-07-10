@@ -12,9 +12,9 @@ public final class EffectorFormField<Value: Equatable, Values: Equatable> {
 
         let initialValue = config.initialValue()
 
-        self.value = Store(initialValue)
+        self.value = Store(name: config.name, initialValue)
 
-        let errors = Store<[ValidationError<Value>]>([])
+        let errors = Store<[ValidationError<Value>]>(name: "\(config.name):errors", [])
         let firstError = errors.map { $0.isEmpty ? nil : $0[0] }
 
         let isValid = firstError.map { $0 == nil }
@@ -98,14 +98,13 @@ public struct EffectorFormFieldConfig<Value, Values> {
     // MARK: Lifecycle
 
     public init(
-        name: String,
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
         rules: [ValidationRule<Value, Values>] = [],
         validateOn: Set<ValidationEvent> = Set([.submit]),
         filter: Store<Bool> = Store(true)
     ) {
-        self.name = name
+        self.name = keyPath.propertyName
         self.keyPath = keyPath
         self.initialValue = initialValue
         self.rules = rules
@@ -226,21 +225,21 @@ func combineValidationRules<Value, Values>(
     _ rules: [ValidationRule<Value, Values>]
 ) -> (Value, Values) -> [ValidationError<Value>] {
     let validator: (_ value: Value, _ values: Values) -> [ValidationError<Value>] = { value, values in
-            var errors = [ValidationError<Value>]()
+        var errors = [ValidationError<Value>]()
 
-            for rule in rules {
-                if let errorText = rule.validator(value, values) {
-                    errors.append(
-                        ValidationError(
-                            rule: rule.name,
-                            value: value,
-                            errorText: errorText
-                        )
+        for rule in rules {
+            if let errorText = rule.validator(value, values) {
+                errors.append(
+                    ValidationError(
+                        rule: rule.name,
+                        value: value,
+                        errorText: errorText
                     )
-                }
+                )
             }
-            return errors
         }
+        return errors
+    }
 
     return validator
 }

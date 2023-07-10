@@ -77,7 +77,9 @@ class Queue {
             first = right
         }
 
-        if first == index { return }
+        if first == index {
+            return
+        }
 
         list.swapAt(index, first)
         down(first)
@@ -103,5 +105,11 @@ class Queue {
         }
 
         return lhs.node.priority.rawValue < rhs.node.priority.rawValue
+    }
+}
+
+extension Queue: CustomStringConvertible {
+    var description: String {
+        list.map(\.description).joined(separator: "\n")
     }
 }

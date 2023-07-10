@@ -2,7 +2,7 @@ import Effector
 import Foundation
 import SwiftUI
 
-public typealias FormValues = Codable & Equatable
+public typealias FormValues = Decodable & Equatable
 
 public final class EffectorForm<Values: FormValues> {
     // MARK: Lifecycle
@@ -38,43 +38,38 @@ public final class EffectorForm<Values: FormValues> {
 
     @discardableResult
     public func field<Value: Equatable>(
-        name: String,
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
         rules: [ValidationRule<Value, Values>] = []
     ) -> EffectorFormField<Value, Values> {
         EffectorFormField(
-            .init(name: name, keyPath: keyPath, initialValue: initialValue(), rules: rules)
+            .init(keyPath: keyPath, initialValue: initialValue(), rules: rules)
         )
     }
 
     @discardableResult
     public func field<Value: Equatable>(
-        name: String,
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
         validator: Validator<Value, Values>?
     ) -> EffectorFormField<Value, Values> {
         EffectorFormField(
             .init(
-                name: name,
                 keyPath: keyPath,
                 initialValue: initialValue(),
-                rules: validator != nil ? [.init(name: name, validator: validator!)] : []
+                rules: validator != nil ? [.init(name: keyPath.propertyName, validator: validator!)] : []
             )
         )
     }
 
     @discardableResult
     public func field<Value: Equatable>(
-        name: String,
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
         rule: ValidationRule<Value, Values>?
     ) -> EffectorFormField<Value, Values> {
         EffectorFormField(
             .init(
-                name: name,
                 keyPath: keyPath,
                 initialValue: initialValue(),
                 rules: rule != nil ? [rule!] : []
@@ -96,7 +91,7 @@ public final class EffectorForm<Values: FormValues> {
         isValidFlags.append(field.isValid)
         isDirtyFlags.append(field.isDirty)
         isTouchedFlags.append(field.isTouched)
-        valuesStores.append(field.value.erased(name: field.name))
+        valuesStores.append(field.value.erase())
 
         bindChangeEvent(
             field: field,
@@ -173,7 +168,7 @@ public final class EffectorForm<Values: FormValues> {
     private var isValidFlags = [Store<Bool>]()
     private var isDirtyFlags = [Store<Bool>]()
     private var isTouchedFlags = [Store<Bool>]()
-    private var valuesStores = [Store<Any>]()
+    private var valuesStores = [AnyStore]()
 }
 
 public extension EffectorForm {

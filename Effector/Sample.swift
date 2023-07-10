@@ -34,9 +34,9 @@ func sampleBase<Payload, State, Mapped>(
         name: sampleName,
         kind: .event,
         priority: .sample,
-        from: [trigger],
+        from: [trigger.graphite],
         seq: seq,
-        to: nextNodes
+        to: nextNodes.map(\.graphite)
     )
 
     return targetEvent
@@ -96,9 +96,9 @@ func sampleBase<Payload, Mapped>(
         name: sampleName,
         kind: .event,
         priority: .sample,
-        from: [trigger],
+        from: [trigger.graphite],
         seq: seq,
-        to: nextNodes
+        to: nextNodes.map(\.graphite)
     )
 
     return targetEvent

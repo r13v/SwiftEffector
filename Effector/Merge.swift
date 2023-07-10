@@ -5,8 +5,8 @@ public func merge<Payload>(_ events: Event<Payload>...) -> Event<Payload> {
         name: "merge",
         kind: .event,
         priority: .effect,
-        from: events,
-        to: [event]
+        from: events.map(\.graphite),
+        to: [event.graphite]
     )
 
     return event
