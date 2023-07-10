@@ -1,6 +1,6 @@
 # SwiftEffector
 
- [Effector](https://effector.dev/) port.
+[Effector](https://effector.dev/) port.
 
 ```swift
 import Effector
@@ -55,7 +55,7 @@ struct ContentView: View {
 
             Button("dec", action: CounterFeature.dec.run)
             Button("inc", action: CounterFeature.inc.run)
-            Button("inc 10 async", action: { Task { try await CounterFeature.incAsync() }})
+            Button("inc 10 async", action: { Task { await CounterFeature.incAsync() }})
             Button("set 100") { counter = 100 }
             CounterFeature.CounterGate(counter)
         }
