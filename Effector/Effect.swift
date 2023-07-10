@@ -1,8 +1,8 @@
 enum Tracing {
     @TaskLocal
-    static var id: String = next()
+    static var id: Int = next()
 
-    static let next = uniqId("trace-")
+    static let next = uniqId()
 }
 
 public final class Effect<Params, Done, Fail: Error>: Unit {
@@ -131,19 +131,19 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
     public var kind: String { "effect" }
 
     @discardableResult
-    public func callAsFunction(_ params: Params) async throws -> Done {
-        return try await run(params)
+    public func callAsFunction(_ params: Params) async -> Result<Done, Fail> {
+        return await run(params)
     }
 
     @discardableResult
-    public func run(_ params: Params) async throws -> Done {
-        return try await Tracing.$id.withValue(Tracing.next()) {
-            try await withCheckedThrowingContinuation { continuation in
+    public func run(_ params: Params) async -> Result<Done, Fail> {
+        return await Tracing.$id.withValue(Tracing.next()) {
+            await withCheckedContinuation { continuation in
 
                 let effectParams = EffectParams(
                     params: params,
-                    resolve: continuation.resume(returning:),
-                    reject: continuation.resume(throwing:)
+                    resolve: { continuation.resume(returning: .success($0)) },
+                    reject: { continuation.resume(returning: .failure($0)) }
                 )
 
                 launch(self.graphite, effectParams)
@@ -202,12 +202,12 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
 
 public extension Effect where Params == Void {
     @discardableResult
-    func callAsFunction() async throws -> Done {
-        try await run(())
+    func callAsFunction() async -> Result<Done, Fail> {
+        await run(())
     }
 
     @discardableResult
-    func run() async throws -> Done {
-        try await run(())
+    func run() async -> Result<Done, Fail> {
+        await run(())
     }
 }

@@ -5,25 +5,22 @@ final class EffectTests: XCTestCase {
     func testEffectReturns() async throws {
         let inc = Effect<Int, Int, Error> { $0 + 1 }
         
-        let got = try await inc(1)
+        let got = try await inc(1).get()
         
         XCTAssertEqual(got, 2)
     }
     
     func testEffectThrows() async throws {
-        enum EffectError: Error {
+        enum EffectError: Error, Equatable {
             case unknown
         }
         
         let effect = Effect<Void, Void, EffectError> { throw EffectError.unknown }
         
-        do {
-            try await effect()
-            XCTAssert(false)
-            
-        } catch {
-            // swiftlint:disable:next force_cast
-            XCTAssertEqual(error as! EffectError, EffectError.unknown)
+        let got = await effect()
+        
+        guard case let .failure(err) = got, err == .unknown else {
+            return XCTFail("Expected failure")
         }
     }
     
@@ -32,7 +29,7 @@ final class EffectTests: XCTestCase {
         let inc = Effect<Int, Int, Error> { $0 + 1 }
         inc.watch { log.append($0) }
         
-        try await inc(10)
+        await inc(10)
         
         sleep(1)
         
@@ -65,7 +62,7 @@ final class EffectTests: XCTestCase {
         let inc = Effect<Int, Int, Error> { $0 + 1 }
         inc.use { $0 + 2 }
         
-        let got = try await inc(1)
+        let got = try await inc(1).get()
         
         XCTAssertEqual(got, 3)
     }
@@ -75,7 +72,7 @@ final class EffectTests: XCTestCase {
         let inc = Effect<Int, Int, Error> { $0 + 1 }
         store.on(inc.finally) { _, n in n }
         
-        try await inc(1)
+        await inc(1)
         
         sleep(1)
         
@@ -92,7 +89,7 @@ final class EffectTests: XCTestCase {
         let inc = Effect<Int, Int, Error> { $0 + 1 }
         store.on(inc.done) { _, n in n }
         
-        try await inc(1)
+        await inc(1)
         
         sleep(1)
         
@@ -110,7 +107,7 @@ final class EffectTests: XCTestCase {
         
         store.on(inc.fail) { _, n in n }
         
-        _ = try? await inc(1)
+        await inc(1)
         
         sleep(1)
         
@@ -126,7 +123,7 @@ final class EffectTests: XCTestCase {
         
         inc.pending.watch { log.append($0) }
         
-        try await inc(1)
+        await inc(1)
         
         XCTAssertEqual(log, [false, true, false])
     }

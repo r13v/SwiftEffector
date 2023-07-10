@@ -1,8 +1,8 @@
-func uniqId(_ prefix: String = "") -> () -> String {
+func uniqId() -> () -> Int {
     var n = 0
 
     return {
         n += 1
-        return "\(prefix)\(n)"
+        return n
     }
 }

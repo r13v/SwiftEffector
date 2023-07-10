@@ -12,7 +12,7 @@ final class AttachTests: XCTestCase {
             effect: inc
         )
         
-        let got = try await fx(1)
+        let got = try await fx(1).get()
         
         sleep(1)
         
@@ -27,7 +27,7 @@ final class AttachTests: XCTestCase {
             effect: { s, p in s + p }
         )
         
-        let got = try await fx(1)
+        let got = try await fx(1).get()
         
         sleep(1)
         

@@ -9,8 +9,7 @@ public final class Node {
         seq: [Step] = [],
         family: Family = Family(type: .regular, links: [], owners: [])
     ) {
-        id = Node.nextID
-        Node.nextID += 1
+        id = Node.nextID()
         self.name = name
         self.kind = kind
         self.priority = priority
@@ -80,7 +79,7 @@ public final class Node {
 
     // MARK: Private
 
-    private static var nextID = 0
+    private static var nextID = uniqId()
 }
 
 extension Node: CustomStringConvertible {
