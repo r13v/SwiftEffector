@@ -3,10 +3,14 @@ public typealias AnyEvent = Event<Any>
 public final class Event<Payload>: Unit {
     // MARK: Lifecycle
 
-    public init(name: String = "event", isDerived: Bool = false) {
+    public init(name: String = "event", isDerived: Bool = false, domain: Domain? = nil) {
         self.name = name
         graphite = Node(name: name, kind: .event, priority: .child)
         self.isDerived = isDerived
+
+        if let domain {
+            domain.eventCreated(cast())
+        }
     }
 
     // MARK: Public
@@ -113,11 +117,15 @@ public final class Event<Payload>: Unit {
         return mapped
     }
 
-    public func erase() -> AnyEvent {
-        let event = Event<Any>(name: name, isDerived: isDerived)
+    public func cast<T>() -> Event<T> {
+        let event = Event<T>(name: name, isDerived: isDerived)
         event.graphite = graphite
 
         return event
+    }
+
+    public func erase() -> AnyEvent {
+        cast()
     }
 }
 

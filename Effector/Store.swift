@@ -5,7 +5,7 @@ public typealias AnyStore = Store<Any>
 public final class Store<State>: Unit, ObservableObject {
     // MARK: Lifecycle
 
-    public init(name: String = "store", _ defaultState: State, isDerived: Bool = false) {
+    public init(name: String = "store", _ defaultState: State, isDerived: Bool = false, domain: Domain? = nil) {
         self.name = name
         self.defaultState = defaultState
         currentState = defaultState
@@ -40,6 +40,10 @@ public final class Store<State>: Unit, ObservableObject {
 
         if !isDerived {
             reset(reinit)
+        }
+
+        if let domain = domain {
+            domain.storeCreated(cast())
         }
     }
 
@@ -145,18 +149,22 @@ public final class Store<State>: Unit, ObservableObject {
         return mapped
     }
 
-    public func erase() -> AnyStore {
-        let store: AnyStore = Store<Any>(name: name, defaultState, isDerived: isDerived)
+    public func cast<T>() -> Store<T> {
+        let store = Store<T>(name: name, defaultState as! T, isDerived: isDerived)
 
         store.graphite = graphite
         store.reinit = reinit
-        store.updates = updates.erase()
+        store.updates = updates.cast()
 
         $currentState
-            .map { $0 as Any }
+            .map { $0 as! T }
             .assign(to: &store.$currentState)
 
         return store
+    }
+
+    public func erase() -> AnyStore {
+        cast()
     }
 
     // MARK: Private

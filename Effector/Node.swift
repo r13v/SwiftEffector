@@ -6,8 +6,7 @@ public final class Node {
         kind: Kind,
         priority: PriorityTag,
         next: [Node] = [],
-        seq: [Step] = [],
-        family: Family = Family(type: .regular, links: [], owners: [])
+        seq: [Step] = []
     ) {
         id = Node.nextID()
         self.name = name
@@ -15,21 +14,6 @@ public final class Node {
         self.priority = priority
         self.next = next
         self.seq = seq
-        self.family = family
-    }
-
-    // MARK: Public
-
-    public struct Family {
-        enum FamilyType {
-            case regular
-            case crosslink
-            case domain
-        }
-
-        var type: FamilyType
-        var links: [Node]
-        var owners: [Node]
     }
 
     // MARK: Internal
@@ -59,7 +43,6 @@ public final class Node {
     let name: String
     let kind: Kind
     let priority: PriorityTag
-    let family: Family
 
     private(set) var next: [Node]
     var seq: [Step]

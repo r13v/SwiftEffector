@@ -91,7 +91,7 @@ public final class EffectorForm<Values: FormValues> {
         isValidFlags.append(field.isValid)
         isDirtyFlags.append(field.isDirty)
         isTouchedFlags.append(field.isTouched)
-        valuesStores.append(field.value.erase())
+        valuesStores.append(field.value.cast())
 
         bindChangeEvent(
             field: field,

@@ -1,3 +1,5 @@
+public typealias AnyEffect = Effect<Any, Any, Error>
+
 enum Tracing {
     @TaskLocal
     static var id: Int = next()
@@ -9,7 +11,7 @@ public final class Effect<Params, Done, Fail: Error>: Unit {
     // MARK: Lifecycle
 
     // swiftlint:disable:next function_body_length
-    public init(name: String = "effect", isDerived: Bool = false, _ handler: @escaping Handler) {
+    public init(name: String = "effect", isDerived: Bool = false, domain: Domain? = nil, _ handler: @escaping Handler) {
         self.name = name
         self.isDerived = isDerived
         graphite = Node(name: name, kind: .effect, priority: .effect)

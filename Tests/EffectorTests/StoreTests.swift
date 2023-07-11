@@ -96,21 +96,23 @@ final class StoreTests: XCTestCase {
 
     func testStoreEraseShareTheSameNode() async throws {
         let store = Store(0)
-        let erased = store.erase()
+        let erased: Store<Int> = store.cast()
 
         XCTAssertEqual(ObjectIdentifier(store.graphite), ObjectIdentifier(erased.graphite))
     }
 
     func testStoreErase() async throws {
-        let store = Store(0).debug()
-        let erased = store.erase().debug()
+        let store = Store(0)
+        let erased: Store<Int> = store.cast()
 
-        let event = Event<Int>().debug()
+        let event = Event<Int>()
 
         store.on(event) { _, value in value }
 
         event(1)
 
-        XCTAssertEqual(erased.getState() as! Int, 1)
+        XCTAssertEqual(erased.getState(), 1)
     }
+    
+    
 }

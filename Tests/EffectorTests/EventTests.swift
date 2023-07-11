@@ -93,7 +93,7 @@ final class EventTests: XCTestCase {
     func testErase() async throws {
         let event = Event<Int>()
 
-        let erased: AnyEvent = event.erase()
+        let erased: AnyEvent = event.cast()
 
         XCTAssertEqual(ObjectIdentifier(event.graphite), ObjectIdentifier(erased.graphite))
     }
