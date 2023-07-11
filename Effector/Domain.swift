@@ -1,7 +1,7 @@
 public class Domain {
     // MARK: Lifecycle
 
-    init(_ name: String, domain: Domain? = nil) {
+    public init(_ name: String, domain: Domain? = nil) {
         self.name = name
         self.parent = domain
 
