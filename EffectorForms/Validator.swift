@@ -1,7 +1,9 @@
 import Foundation
 
-public enum ValidationEvent {
-    case submit, blur, change
+public enum ValidationEvent: CaseIterable {
+    case submit
+    case blur
+    case change
 }
 
 public struct ValidationError<Value: Equatable>: Equatable {
