@@ -13,6 +13,7 @@ public final class FieldBag<T: Equatable, Root: FormValues>: FieldBagProtocol {
     // MARK: Lifecycle
 
     public init(_ field: EffectorFormField<T, Root>) {
+        self.name = field.name
         self.field = field
         self.value = field.value.getState()
         self.error = field.firstError.currentState?.errorText
@@ -25,6 +26,8 @@ public final class FieldBag<T: Equatable, Root: FormValues>: FieldBagProtocol {
     }
 
     // MARK: Public
+
+    public var name: String
 
     @Published
     public private(set) var error: String?
