@@ -786,13 +786,14 @@ final class FieldTests: XCTestCase {
     }
 
     func testValidateManually() async throws {
-        let field = createField(
+        let extractedExpr = createField(
             .init(
                 keyPath: \SignInForm.email,
                 initialValue: "",
                 rules: [makeEmailValidationRule()]
             )
         )
+        let field = extractedExpr
 
         field.change("123")
 

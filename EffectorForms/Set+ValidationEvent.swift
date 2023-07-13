@@ -1,4 +1,4 @@
-extension Set where Element == ValidationEvent {
+public extension Set where Element == ValidationEvent {
     static let all = Set(ValidationEvent.allCases)
 
     static let submit = Set([ValidationEvent.submit])
