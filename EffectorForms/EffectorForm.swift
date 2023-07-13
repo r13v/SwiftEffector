@@ -66,13 +66,13 @@ public final class EffectorForm<Values: FormValues> {
     public func field<Value: Equatable>(
         keyPath: KeyPath<Values, Value>,
         initialValue: @autoclosure @escaping () -> Value,
-        rule: ValidationRule<Value, Values>?
+        rules: ValidationRule<Value, Values>?
     ) -> EffectorFormField<Value, Values> {
         EffectorFormField(
             .init(
                 keyPath: keyPath,
                 initialValue: initialValue(),
-                rules: rule != nil ? [rule!] : []
+                rules: rules != nil ? [rules!] : []
             )
         )
     }

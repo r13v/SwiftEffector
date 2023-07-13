@@ -211,12 +211,12 @@ final class FormTests: XCTestCase {
         let email = form.field(
             keyPath: \.email,
             initialValue: "",
-            rule: .email()
+            rules: .email()
         )
         let password = form.field(
             keyPath: \.password,
             initialValue: "",
-            rule: .min(6)
+            rules: .min(6)
         )
 
         form.register(field: email)
