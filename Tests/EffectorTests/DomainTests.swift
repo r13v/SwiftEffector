@@ -47,7 +47,7 @@ final class DomainTests: XCTestCase {
     
     func testSubdomain() async throws {
         let app = Domain("app")
-        let domain = Domain("sub", domain: app)
+        let domain = Domain("sub", parent: app)
         
         var log = [Int]()
         

@@ -1,16 +1,16 @@
 public class Domain {
     // MARK: Lifecycle
 
-    public init(_ name: String, domain: Domain? = nil) {
+    public init(_ name: String, parent: Domain? = nil) {
         self.name = name
-        self.parent = domain
+        self.parent = parent
 
         self.graphite = Node(name: name, kind: .domain, priority: .child)
 
-        if let domain {
-            forward(from: eventCreated, to: domain.eventCreated)
-            forward(from: storeCreated, to: domain.storeCreated)
-            forward(from: domainCreated, to: domain.domainCreated)
+        if let parent {
+            forward(from: eventCreated, to: parent.eventCreated)
+            forward(from: storeCreated, to: parent.storeCreated)
+            forward(from: domainCreated, to: parent.domainCreated)
         }
 
         eventCreated.watch { unit in
