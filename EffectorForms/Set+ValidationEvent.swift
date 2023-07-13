@@ -3,5 +3,5 @@ extension Set where Element == ValidationEvent {
 
     static let submit = Set([ValidationEvent.submit])
     static let change = Set([ValidationEvent.change])
-    static let blue = Set([ValidationEvent.blur])
+    static let blur = Set([ValidationEvent.blur])
 }
