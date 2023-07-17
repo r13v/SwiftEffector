@@ -24,17 +24,20 @@ public final class EffectorForm<Values: FormValues> {
     public var isTouched: Store<Bool>!
     public var meta: Store<Meta>!
 
-    public var submit = Event<Void>()
-    public var validate = Event<Void>()
-    public var resetForm = Event<Void>()
-    public var setForm = Event<Values>()
+    public let submit = Event<Void>()
+    public let validate = Event<Void>()
+    public let resetForm = Event<Void>()
+    public let setForm = Event<Values>()
 
-    public var resetTouched = Event<Void>()
-    public var resetValues = Event<Void>()
-    public var resetErrors = Event<Void>()
+    public let resetTouched = Event<Void>()
+    public let resetValues = Event<Void>()
+    public let resetErrors = Event<Void>()
 
-    public var submitted = Event<Values>()
-    public var validated = Event<Values>()
+    public let submitted = Event<Values>()
+    public let validated = Event<Values>()
+
+    public let focusField = Event<PartialKeyPath<Values>?>()
+    public let focusedField = Store<PartialKeyPath<Values>?>(nil)
 
     @discardableResult
     public func field<Value: Equatable>(
@@ -154,6 +157,8 @@ public final class EffectorForm<Values: FormValues> {
             filter: isOk,
             target: validated
         )
+
+        focusedField.on(focusField) { _, value in value }
     }
 
     // MARK: Internal

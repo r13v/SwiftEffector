@@ -59,7 +59,8 @@ public final class Store<State>: Unit, ObservableObject {
 
     public let name: String
 
-    @Published public private(set) var currentState: State
+    @Published
+    public private(set) var currentState: State
 
     public private(set) var isDerived: Bool
 
