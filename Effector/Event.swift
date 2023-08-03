@@ -3,14 +3,12 @@ public typealias AnyEvent = Event<Any>
 public final class Event<Payload>: Unit {
     // MARK: Lifecycle
 
-    public init(name: String = "event", isDerived: Bool = false, domain: Domain? = nil) {
+    public init(name: String = "event", isDerived: Bool = false) {
         self.name = name
         graphite = Node(name: name, kind: .event, priority: .child)
         self.isDerived = isDerived
 
-        if let domain {
-            domain.eventCreated(cast())
-        }
+     
     }
 
     // MARK: Public

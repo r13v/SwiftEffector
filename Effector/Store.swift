@@ -5,7 +5,7 @@ public typealias AnyStore = Store<Any>
 public final class Store<State>: Unit, ObservableObject {
     // MARK: Lifecycle
 
-    public init(name: String = "store", _ defaultState: State, isDerived: Bool = false, domain: Domain? = nil) {
+    public init(name: String = "store", _ defaultState: State, isDerived: Bool = false) {
         self.name = name
         self.defaultState = defaultState
         currentState = defaultState
@@ -40,10 +40,6 @@ public final class Store<State>: Unit, ObservableObject {
 
         if !isDerived {
             reset(reinit)
-        }
-
-        if let domain = domain {
-            domain.storeCreated(cast())
         }
     }
 
