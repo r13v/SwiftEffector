@@ -20,7 +20,7 @@ final class AttachTests: XCTestCase {
     
     func testAttachWithMappedParams() async throws {
         let fx = Effect<Int, Int, Error> { $0 }
-        let attached = attach(effect: fx, map: { $0 + 10 })
+        let attached = attach(effect: fx, mapParams: { $0 + 10 })
         
         let got = try await attached(1).get()
         
@@ -32,9 +32,9 @@ final class AttachTests: XCTestCase {
         let inc = Effect<Int, Int, Error> { $0 + 1 }
         
         let fx = attach(
+            effect: inc,
             store: store,
-            map: { s, p in s + p },
-            effect: inc
+            mapParams: { s, p in s + p }
         )
         
         let got = try await fx(1).get()
@@ -49,7 +49,7 @@ final class AttachTests: XCTestCase {
         
         let fx: Effect<Int, Int, Error> = attach(
             store: store,
-            effect: { s, p in s + p }
+            handler: { s, p in s + p }
         )
         
         let got = try await fx(1).get()
