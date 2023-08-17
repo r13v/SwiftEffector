@@ -2,6 +2,31 @@
 import XCTest
 
 final class AttachTests: XCTestCase {
+    func testAttachCreatesEffect() async throws {
+        let fx = Effect<Void, Int, Error> { 1 }
+        let attached = attach(effect: fx)
+        
+        var isOriginalFxCalled = false
+        fx.watch { _ in isOriginalFxCalled = true }
+        
+        var isAttachedFxCalled = false
+        attached.watch { _ in isAttachedFxCalled = true }
+        
+        await attached()
+        
+        XCTAssertFalse(isOriginalFxCalled)
+        XCTAssertTrue(isAttachedFxCalled)
+    }
+    
+    func testAttachWithMappedParams() async throws {
+        let fx = Effect<Int, Int, Error> { $0 }
+        let attached = attach(effect: fx, map: { $0 + 10 })
+        
+        let got = try await attached(1).get()
+        
+        XCTAssertEqual(got, 11)
+    }
+    
     func testAttachEffect() async throws {
         let store = Store(10)
         let inc = Effect<Int, Int, Error> { $0 + 1 }
